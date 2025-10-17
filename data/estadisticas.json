@@ -1,0 +1,19 @@
+[ {
+  "idUsuario" : "U001",
+  "fecha" : "2025-10-16",
+  "caloriasQuemadas" : 340.5,
+  "minutosEjercicio" : 60,
+  "nivelEstres" : 3.8
+}, {
+  "idUsuario" : "U002",
+  "fecha" : "2024-11-7",
+  "caloriasQuemadas" : 340.5,
+  "minutosEjercicio" : 30,
+  "nivelEstres" : 1.5
+}, {
+  "idUsuario" : "U003",
+  "fecha" : "2020-9-4",
+  "caloriasQuemadas" : 140.6,
+  "minutosEjercicio" : 15,
+  "nivelEstres" : 1.0
+} ]
