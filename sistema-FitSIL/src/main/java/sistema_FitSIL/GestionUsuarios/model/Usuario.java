@@ -1,41 +1,40 @@
 package sistema_FitSIL.GestionUsuarios.model;
 
-public class Usuario {
-    private Integer id;
+import jakarta.persistence.Entity;
+
+
+@Entity
+public class Usuario extends Persona {
+
     private double peso;
     private double altura;
 
+    // Constructor vacío (importante para Jackson)
     public Usuario() {
+        setRol(Rol.USUARIO);
     }
-    
-    public Usuario(Integer id, double peso, double altura) {
-        this.id = id;
+
+    // Constructor solo para peso y altura (opcional)
+    public Usuario(double peso, double altura) {
         this.peso = peso;
         this.altura = altura;
+        setRol(Rol.USUARIO);
     }
 
-    public Integer getId() {
-        return this.id;
+    // NUEVO constructor completo con nombre y correo
+    public Usuario(String nombre, String correo, double peso, double altura) {
+    super(); // llama al constructor vacío
+    setNombre(nombre);
+    setCorreo(correo);
+    this.peso = peso;
+    this.altura = altura;
+    setRol(Rol.USUARIO);
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    // Getters y setters
+    public double getPeso() { return this.peso; }
+    public void setPeso(double peso) { this.peso = peso; }
 
-    public double getPeso() {
-        return this.peso;
-    }
-
-    public void setPeso(double peso) {
-        this.peso = peso;
-    }
-
-    public double getAltura() {
-        return this.altura;
-    }
-
-    public void setAltura(double altura) {
-        this.altura = altura;
-    }
-
+    public double getAltura() { return this.altura; }
+    public void setAltura(double altura) { this.altura = altura; }
 }

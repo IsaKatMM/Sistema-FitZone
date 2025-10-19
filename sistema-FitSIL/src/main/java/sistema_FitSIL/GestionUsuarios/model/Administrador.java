@@ -1,25 +1,21 @@
 package sistema_FitSIL.GestionUsuarios.model;
 
-public class Administrador {
-    private Integer id;
+import jakarta.persistence.Entity;
+
+@Entity
+public class Administrador extends Persona {
+
     private String departamento;
     private int codigoAdmin;
 
     public Administrador() {
+        setRol(Rol.ADMINISTRADOR);
     }
 
-    public Administrador(Integer id, String departamento, int codigoAdmin) {
-        this.id = id;
+    public Administrador(String departamento, int codigoAdmin) {
         this.departamento = departamento;
         this.codigoAdmin = codigoAdmin;
-    }
-
-    public Integer getId() {
-        return this.id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
+        setRol(Rol.ADMINISTRADOR);
     }
 
     public String getDepartamento() {
@@ -37,5 +33,6 @@ public class Administrador {
     public void setCodigoAdmin(int codigoAdmin) {
         this.codigoAdmin = codigoAdmin;
     }
+
     
 }

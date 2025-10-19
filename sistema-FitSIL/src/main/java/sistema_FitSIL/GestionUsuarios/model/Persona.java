@@ -1,14 +1,13 @@
 package sistema_FitSIL.GestionUsuarios.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Persona {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String nombre;
     private String apellido;
@@ -17,11 +16,14 @@ public class Persona {
     private String usuario;
     private String contrasenia;
 
-    
+    @Enumerated(EnumType.STRING)
+    private Rol rol; // 👈 Nuevo campo
+
     public Persona() {
     }
 
-    public Persona (Integer id, String nombre, String apellido, String telefono, String correo, String usuario, String contrasena) {
+    public Persona(Integer id, String nombre, String apellido, String telefono,
+                   String correo, String usuario, String contrasena, Rol rol) {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -29,7 +31,8 @@ public class Persona {
         this.correo = correo;
         this.usuario = usuario;
         this.contrasenia = contrasena;
-    } 
+        this.rol = rol;
+    }
 
     public Integer getId() {
         return this.id;
@@ -86,4 +89,14 @@ public class Persona {
     public void setContrasenia(String contrasenia) {
         this.contrasenia = contrasenia;
     }
+
+    public Rol getRol() {
+        return this.rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    
 }
