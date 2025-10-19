@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "id" : null,
   "nombre" : "Isabel",
@@ -10,3 +11,6 @@
   "peso" : 50.0,
   "altura" : 1.65
 }
+=======
+{"id":null,"nombre":"Isabel","apellido":"Morocho","telefono":null,"correo":"isa@example.com","usuario":null,"contrasenia":null,"rol":"ADMINISTRADOR","peso":60.0,"altura":1.65}
+>>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)

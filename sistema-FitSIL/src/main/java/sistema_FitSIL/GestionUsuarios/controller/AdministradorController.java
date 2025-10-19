@@ -2,7 +2,10 @@ package sistema_FitSIL.GestionUsuarios.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+<<<<<<< HEAD
 import org.springframework.security.crypto.password.PasswordEncoder;
+=======
+>>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
 import org.springframework.web.bind.annotation.*;
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
@@ -17,12 +20,18 @@ public class AdministradorController {
     @Autowired
     private AdministradorService adminService;
 
+<<<<<<< HEAD
     @Autowired
     private PasswordEncoder passwordEncoder; // ← inyectamos el encoder
     // Crear administrador
     @PostMapping("/registro")
     public ResponseEntity<Administrador> registrar(@RequestBody Administrador admin) {
         admin.setContrasenia(passwordEncoder.encode(admin.getContrasenia()));
+=======
+    // Crear administrador
+    @PostMapping("/registro")
+    public ResponseEntity<Administrador> registrar(@RequestBody Administrador admin) {
+>>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
         return ResponseEntity.ok(adminService.registrarAdmin(admin));
     }
 
