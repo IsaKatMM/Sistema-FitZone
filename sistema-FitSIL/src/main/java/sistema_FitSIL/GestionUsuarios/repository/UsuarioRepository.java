@@ -96,5 +96,9 @@ public class UsuarioRepository {
 
 
 
+<<<<<<< HEAD
 >>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
 }
+=======
+}
+>>>>>>> 8340bd0 (v3, apis - Usuario controller)
