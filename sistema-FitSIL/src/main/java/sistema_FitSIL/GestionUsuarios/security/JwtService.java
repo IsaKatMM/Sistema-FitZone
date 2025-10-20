@@ -3,61 +3,56 @@ package sistema_FitSIL.GestionUsuarios.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.Date;
+import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "fitsilSecret2025"; // variable de entorno en producción
-    private final long EXPIRATION_MS = 3600000; // 1 hora
+    private static final String SECRET_KEY = "claveSuperSeguraParaMiSistemaDeRutinas2025";
 
-    // Generar token
-    public String generarToken(String email, String rol) {
+    private Key getSignInKey() {
+        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    }
+
+    public String generateToken(Map<String, Object> extraClaims, String username) {
         return Jwts.builder()
-                .setSubject(email)
-                .claim("rol", rol)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .setClaims(extraClaims)
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Obtener email del token
-    public String obtenerEmailDesdeToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token.replace("Bearer ", ""))
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSignInKey())
+                .build()
+                .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        return claimsResolver.apply(claims);
     }
 
-    // Obtener rol del token
-    public String obtenerRolDesdeToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token.replace("Bearer ", ""))
-                .getBody();
-        return claims.get("rol", String.class);
+    public boolean isTokenValid(String token, String username) {
+        final String extractedUsername = extractUsername(token);
+        return (extractedUsername.equals(username)) && !isTokenExpired(token);
     }
 
-    // Validar token
-    public boolean esTokenValido(String token) {
-        try {
-            Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token.replace("Bearer ", ""))
-                    .getBody();
-            return !claims.getExpiration().before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
     }
 
-    // Chequear si es admin
-    public boolean tieneRolAdmin(String token) {
-        String rol = obtenerRolDesdeToken(token);
-        return "ADMIN".equalsIgnoreCase(rol);
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 }
