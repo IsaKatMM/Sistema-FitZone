@@ -3,21 +3,16 @@ package sistema_FitSIL.GestionUsuarios.repository;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Repository;
-import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-
-
-
-
 @Repository
 public class UsuarioRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String carpetaUsuarios = "../dataUsuarios/"; // ruta relativa
+    private final String carpetaUsuarios = "src/main/java/sistema_FitSIL/dataUsuarios/"; // ruta dentro del proyecto
 
     public UsuarioRepository() {
         File carpeta = new File(carpetaUsuarios);
@@ -27,13 +22,14 @@ public class UsuarioRepository {
         }
     }
 
+    // Guardar usuario
     public Usuario guardar(Usuario usuario) {
         if (usuario.getCorreo() == null || usuario.getCorreo().isEmpty()) {
             throw new RuntimeException("El correo del usuario no puede ser nulo");
         }
         try {
             File file = new File(carpetaUsuarios + usuario.getCorreo() + ".json");
-            objectMapper.writeValue(file, usuario);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, usuario);
             System.out.println("Usuario guardado en: " + file.getAbsolutePath());
         } catch (IOException e) {
             throw new RuntimeException("Error al guardar usuario", e);
@@ -41,6 +37,7 @@ public class UsuarioRepository {
         return usuario;
     }
 
+    // Buscar por correo
     public Optional<Usuario> buscarPorEmail(String email) {
         try {
             File file = new File(carpetaUsuarios + email + ".json");
@@ -53,15 +50,14 @@ public class UsuarioRepository {
         }
     }
 
+    // Actualizar usuario
     public Usuario actualizar(Usuario usuario) {
         return guardar(usuario);
     }
 
+    // Eliminar usuario
     public void eliminar(String email) {
         File file = new File(carpetaUsuarios + email + ".json");
         if (file.exists()) file.delete();
     }
-
-
-
 }

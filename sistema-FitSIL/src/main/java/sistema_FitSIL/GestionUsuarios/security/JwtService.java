@@ -3,56 +3,69 @@ package sistema_FitSIL.GestionUsuarios.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.util.Date;
-import java.util.Map;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY = "claveSuperSeguraParaMiSistemaDeRutinas2025";
+    @Value("${jwt.secret}")
+    private final String SECRET_KEY = "EstaEsUnaClaveMuySeguraQueTieneMasDe32Bytes!";
 
-    private Key getSignInKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-    }
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hora
 
-    public String generateToken(Map<String, Object> extraClaims, String username) {
+    // ✅ Genera token con correo y rol
+    public String generarToken(String correo, String rol) {
         return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .setSubject(correo)
+                .claim("rol", rol)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    // ✅ Valida que el token pertenezca al usuario correcto
+    public boolean validarToken(String token, String correo) {
+        final String correoExtraido = extraerCorreo(token);
+        return (correoExtraido.equals(correo) && !estaExpirado(token));
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    // ✅ Extrae correo (subject)
+    public String extraerCorreo(String token) {
+        return extraerClaim(token, Claims::getSubject);
+    }
+
+    // ✅ Extrae rol del JWT
+    public String extraerRol(String token) {
+        return extraerClaim(token, claims -> claims.get("rol", String.class));
+    }
+
+    // ✅ Nuevo método usado por el controlador
+    public String obtenerCorreoDesdeToken(String token) {
+        return extraerCorreo(token);
+    }
+
+    private <T> T extraerClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extraerTodosClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    public boolean isTokenValid(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username)) && !isTokenExpired(token);
+    private Claims extraerTodosClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    private boolean estaExpirado(String token) {
+        return extraerExpiration(token).before(new Date());
     }
 
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    private Date extraerExpiration(String token) {
+        return extraerClaim(token, Claims::getExpiration);
     }
 }

@@ -51,6 +51,12 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+<dependency>
+    <groupId>me.paulschwarz</groupId>
+    <artifactId>spring-dotenv</artifactId>
+    <version>2.5.4</version>
+</dependency>
+
 
 <!-- H2 Database para pruebas -->
 <dependency>
