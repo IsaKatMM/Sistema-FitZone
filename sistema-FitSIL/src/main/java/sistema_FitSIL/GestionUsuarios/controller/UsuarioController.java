@@ -5,11 +5,17 @@ import sistema_FitSIL.GestionUsuarios.service.UsuarioService;
 import sistema_FitSIL.GestionUsuarios.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.HashMap;
+
+import sistema_FitSIL.GestionUsuarios.util.Sanitizer;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -24,7 +30,17 @@ public class UsuarioController {
 
     // Registro de usuario
     @PostMapping("/registro")
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> registrar(
+            @Valid @RequestBody Usuario usuario,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            String mensaje = bindingResult.getAllErrors()
+                    .get(0)
+                    .getDefaultMessage();
+            return ResponseEntity.badRequest().body(null);
+        }
+
         Usuario nuevo = usuarioService.registrarUsuario(usuario);
         return ResponseEntity.status(201).body(nuevo);
     }

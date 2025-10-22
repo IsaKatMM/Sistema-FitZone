@@ -1,0 +1,12 @@
+{
+  "id" : null,
+  "nombre" : "Leonardo",
+  "apellido" : null,
+  "telefono" : null,
+  "correo" : "leonardo@gmail.com",
+  "usuario" : null,
+  "contrasenia" : "$2a$10$3C3VlHgLrF4x9sg/39HNuO6nmsYnUrESXP0At/0uNcoRnD4l30R8e",
+  "rol" : "ADMINISTRADOR",
+  "departamento" : "Sistemas",
+  "codigoAdmin" : 123
+}

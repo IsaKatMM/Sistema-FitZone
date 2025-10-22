@@ -17,8 +17,8 @@ public class AdministradorRepository {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // ✅ Ahora los datos se guardan dentro de tu estructura visible del proyecto
-    private final String carpetaAdmins = "src/main/java/sistema_FitSIL/dataAdministradores/";
-    private final String carpetaUsuarios = "src/main/java/sistema_FitSIL/dataUsuarios/";
+    private final String carpetaAdmins = "../dataAdministradores/";
+    private final String carpetaUsuarios = "../dataUsuarios/";
 
     public AdministradorRepository() {
         new File(carpetaAdmins).mkdirs();
