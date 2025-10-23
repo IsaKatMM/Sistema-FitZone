@@ -1,0 +1,12 @@
+{
+  "id" : null,
+  "nombre" : "Jose",
+  "apellido" : "Perez",
+  "telefono" : null,
+  "correo" : "pepe@example.com",
+  "usuario" : "jose1",
+  "contrasenia" : "$2a$10$XEjUlOg7CXHhY5HQiYQkquOO0TpcYZlfw7FrKxG2Xe0fpvsNgdONK",
+  "rol" : "USUARIO",
+  "peso" : 50.0,
+  "altura" : 1.75
+}
