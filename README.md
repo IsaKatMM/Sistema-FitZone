@@ -7,7 +7,6 @@ El backend principal se desarrolla con Java + Spring Boot, y se proyecta integra
 
 ------- Arquitectura Seleccionada----------
 El proyecto sigue una **arquitectura modular**:
-- **API Gateway**: expone los servicios al frontend.
 - **Backend (Java, Spring Boot)**:  
   - Módulo de gestión de usuarios.  
   - Módulo de rutinas y ejercicios.  
@@ -44,8 +43,7 @@ Generación de tokens JWT con campos exp, iat y roles.
 
 Filtro de roles (RoleFilter) para restringir acceso a endpoints según el tipo de usuario (ADMIN / USUARIO).
 
-Configuración CORS para permitir solicitudes solo desde el dominio autorizado:
-https://fitsil-front.app
+Configuración CORS para permitir solicitudes solo desde el dominio autorizado
 
 Validación de datos con Bean Validation (@NotBlank, @Email, @Size, etc.).
 
@@ -62,14 +60,6 @@ Backend con autenticación funcional usando JWT.
 Rutas protegidas verificadas con tokens válidos/expirados.
 
 Código organizado según estándares OWASP y GitFlow.
-
-Recomendaciones:
-
-No exponer claves ni tokens en repositorios públicos.
-
-Probar siempre las rutas protegidas antes de fusionar ramas.
-
-Documentar cambios de seguridad en /docs/security_notes.md.
 
 
 ---Flujo de Trabajo con GitFlow-----
