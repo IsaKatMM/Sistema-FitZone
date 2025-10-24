@@ -1,0 +1,12 @@
+{
+  "id" : null,
+  "nombre" : "Carlos",
+  "apellido" : null,
+  "telefono" : null,
+  "correo" : "carlos@example.com",
+  "usuario" : null,
+  "contrasenia" : "1234",
+  "rol" : "USUARIO",
+  "peso" : 72.0,
+  "altura" : 1.78
+}

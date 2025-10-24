@@ -1,4 +1,5 @@
-# Sistema-FitZone
+# Sistema-FitSIL
+FitSIL (Santiago, Isabel, Leonargo)=SIL
 Aplicación para la gestión de rutinas de entrenamiento, registro de progreso y seguimiento fitness.
 
 El sistema está diseñado con arquitectura de **microservicios**, usando **Java + Spring Boot** para el backend principal y **Python** para servicios especializados (ej. cálculos, estadísticas o IA).
