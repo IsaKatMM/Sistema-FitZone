@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import sistema_FitSIL.GestionUsuarios.security.JwtAuthFilter;
+import sistema_FitSIL.GestionUsuarios.security.RoleFilter;
 import sistema_FitSIL.GestionUsuarios.service.JsonUserDetailsService;
 
 @Configuration
@@ -30,30 +31,33 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     @Autowired
+    private RoleFilter roleFilter;
+
+    @Autowired
     private JsonUserDetailsService userDetailsService;
 
-   /* @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-                .csrf().disable()
-                .cors().and()
-                .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas para usuarios normales
-                        .requestMatchers("/usuarios/registro", "/usuarios/login").permitAll()
-                        // Rutas públicas para autenticación general (si tienes)
-                        .requestMatchers("/auth/**").permitAll()
-                        // Registro de administradores solo para admins
-                        .requestMatchers("/administradores/registro").hasRole("ADMINISTRADOR")
-                        // Cualquier otra ruta requiere autenticación
-                        .anyRequest().authenticated())
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .csrf(csrf -> csrf.disable()) // CSRF off porque usas JWT
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/usuarios/registro", "/usuarios/login", "/auth/**").permitAll()
+                .anyRequest().authenticated()
+            )
+            .headers(headers -> headers
+                .contentSecurityPolicy("default-src 'self'; script-src 'self'")
                 .and()
-                .authenticationProvider(authProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+                .frameOptions().sameOrigin()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(roleFilter, JwtAuthFilter.class);
 
         return http.build();
-    }*/
+    }
 
     @Bean
     public DaoAuthenticationProvider authProvider() {
@@ -76,35 +80,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://fitsil-front.app")); // solo tu frontend
+        config.setAllowedOrigins(List.of("https://fitsil-front.app", "http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(false);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-
-
-    //Cabeceras HTTP (CSP, HSTS, frameOptions, etc.)
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http
-            .csrf(csrf -> csrf.disable()) // depende si usas JWT
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/usuarios/registro", "/usuarios/login").permitAll()
-                .requestMatchers("/h2-console/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .headers(headers -> headers
-                .contentSecurityPolicy("default-src 'self'; script-src 'self'")
-                .and()
-                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                .frameOptions().sameOrigin()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        return http.build();
     }
 }

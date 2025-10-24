@@ -1,0 +1,12 @@
+{
+  "id" : 2,
+  "nombre" : "Alexis",
+  "apellido" : "Francisco",
+  "telefono" : "097854212",
+  "correo" : "Alex12@example.com",
+  "usuario" : "Ale12",
+  "contrasenia" : "$2a$10$Z8UAdlKj8aUhsy/EfoiOJekislN0ydhhkReww4aPlbQ0b5KLFP23a",
+  "rol" : "USUARIO",
+  "peso" : 80.0,
+  "altura" : 1.9
+}
