@@ -30,36 +30,25 @@ El proyecto sigue una **arquitectura modular**:
 - Uso de **mensajes de commit claros y descriptivos** para facilitar el historial de cambios.  
 - Aplicación de **buenas prácticas de programación**: modularidad, reutilización de código y pruebas unitarias para funciones críticas.
 
-Módulo de Seguridad (JWT / CORS / OWASP)
+---------Módulo de Seguridad (JWT / CORS / OWASP)---------
 
 Objetivo:
 Implementar autenticación y autorización seguras en el backend mediante JWT, validación de roles (RBAC), políticas CORS y principios del OWASP Top 10.
 
 Características implementadas:
-
-Creación de rutas /auth/login y /auth/register.
-
-Generación de tokens JWT con campos exp, iat y roles.
-
-Filtro de roles (RoleFilter) para restringir acceso a endpoints según el tipo de usuario (ADMIN / USUARIO).
-
-Configuración CORS para permitir solicitudes solo desde el dominio autorizado
-
-Validación de datos con Bean Validation (@NotBlank, @Email, @Size, etc.).
-
-Manejo global de errores mediante la clase GlobalExceptionHandler.
-
-Actualización de los diagramas C4 (Contenedores y Componentes) para incluir módulos de autenticación y seguridad.
-
-Pruebas con Postman/Swagger evidenciando respuestas 200, 401, 403 según los casos.
+- Creación de rutas /auth/login y /auth/register.
+- Generación de tokens JWT con campos exp, iat y roles.
+- Filtro de roles (RoleFilter) para restringir acceso a endpoints según el tipo de usuario (ADMIN / USUARIO).
+- Configuración CORS para permitir solicitudes solo desde el dominio autorizado
+- Validación de datos con Bean Validation (@NotBlank, @Email, @Size, etc.).
+- Manejo global de errores mediante la clase GlobalExceptionHandler.
+- Actualización de los diagramas C4 (Contenedores y Componentes) para incluir módulos de autenticación y seguridad.
+- Pruebas con Postman/Swagger evidenciando respuestas 200, 401, 403 según los casos.
 
 Resultados:
-
-Backend con autenticación funcional usando JWT.
-
-Rutas protegidas verificadas con tokens válidos/expirados.
-
-Código organizado según estándares OWASP y GitFlow.
+- Backend con autenticación funcional usando JWT.
+- Rutas protegidas verificadas con tokens válidos/expirados.
+- Código organizado según estándares OWASP y GitFlow.
 
 
 ---Flujo de Trabajo con GitFlow-----
