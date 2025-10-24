@@ -2,17 +2,19 @@
 SIL- Santiago, Isabel, Leonardo
 Aplicación para la gestión de rutinas de entrenamiento, registro de progreso y seguimiento fitness.
 
-El sistema está diseñado con arquitectura de **microservicios**, usando **Java + Spring Boot** para el backend principal y **Python** para servicios especializados (ej. cálculos, estadísticas o IA).
+El sistema está diseñado con arquitectura modular, donde cada módulo gestiona una funcionalidad específica del sistema (usuarios, rutinas, autenticación, estadísticas, etc.).
+El backend principal se desarrolla con Java + Spring Boot, y se proyecta integrar un microservicio adicional que se encarge de recomendar planes nutricionales para los usuarios.
 
 ------- Arquitectura Seleccionada----------
-El proyecto sigue una **arquitectura de microservicios**:
+El proyecto sigue una **arquitectura modular**:
 - **API Gateway**: expone los servicios al frontend.
 - **Backend (Java, Spring Boot)**:  
-  - Gestión de usuarios.  
-  - Rutinas y ejercicios.  
-  - Autenticación (JWT).  
-- **Microservicio en Python**:  
-  - Procesamiento de datos (ej. estadísticas de progreso).  
+  - Módulo de gestión de usuarios.  
+  - Módulo de rutinas y ejercicios.  
+  - Módulo de autenticación (JWT).
+  - Módulo de estadísticas (procesamiento de datos y reportes)
+- **Microservicio**:  
+  - Planes nutricionales para los usuarios 
   - Posible módulo de Machine Learning para recomendaciones.  
 - **Base de datos**: MySQL.  
 - **Frontend**: Web (JS/HTML/CSS) y App móvil (React Native).  
