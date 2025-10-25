@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "nombre": "Ensalada Proteica",
+    "descripcion": "Ensalada con pollo y quinoa",
+    "imagenUrl": "https://example.com/ensalada.jpg",
+    "ingredientes": "Pollo, quinoa, espinaca, tomate",
+    "instrucciones": "Mezclar todos los ingredientes y servir"
+  },
+  {
+    "id": 2,
+    "nombre": "Batido de Proteína",
+    "descripcion": "Batido con proteína y frutas",
+    "imagenUrl": "https://example.com/batido.jpg",
+    "ingredientes": "Leche, proteína en polvo, plátano, fresas",
+    "instrucciones": "Licuar todos los ingredientes y beber"
+  }
+]
