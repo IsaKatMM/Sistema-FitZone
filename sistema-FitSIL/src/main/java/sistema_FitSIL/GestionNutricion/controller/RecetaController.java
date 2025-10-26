@@ -18,7 +18,7 @@ public class RecetaController {
     private RecetaClientService recetaClientService;
 
     /**
-     * 📋 Obtener todas las recetas
+     *  Obtener todas las recetas
      * GET http://localhost:8081/recetas
      */
     @GetMapping
@@ -36,7 +36,7 @@ public class RecetaController {
     }
 
     /**
-     * 🔍 Obtener una receta específica por ID
+     *  Obtener una receta específica por ID
      * GET http://localhost:8081/recetas/1
      */
     @GetMapping("/{id}")
@@ -55,7 +55,7 @@ public class RecetaController {
     }
 
     /**
-     * 🔎 Buscar recetas por nombre
+     *  Buscar recetas por nombre
      * GET http://localhost:8081/recetas/buscar/nombre?q=ensalada
      */
     @GetMapping("/buscar/nombre")
@@ -73,7 +73,7 @@ public class RecetaController {
     }
 
     /**
-     * 🔎 Buscar recetas por ingrediente
+     * Buscar recetas por ingrediente
      * GET http://localhost:8081/recetas/buscar/ingrediente?q=pollo
      */
     @GetMapping("/buscar/ingrediente")
@@ -91,7 +91,7 @@ public class RecetaController {
     }
 
     /**
-     * 🚫 Filtrar recetas excluyendo ingredientes (para restricciones alimenticias)
+     *  Filtrar recetas excluyendo ingredientes (para restricciones alimenticias)
      * GET http://localhost:8081/recetas/filtrar?restricciones=lactosa,gluten
      */
     @GetMapping("/filtrar")
@@ -110,7 +110,7 @@ public class RecetaController {
     }
 
     /**
-     * 🎲 Obtener recetas aleatorias (para sugerencias)
+     *  Obtener recetas aleatorias (para sugerencias)
      * GET http://localhost:8081/recetas/aleatorias?cantidad=3
      */
     @GetMapping("/aleatorias")
@@ -126,7 +126,7 @@ public class RecetaController {
     }
 
     /**
-     * 📊 Obtener estadísticas del catálogo de recetas
+     *  Obtener estadísticas del catálogo de recetas
      * GET http://localhost:8081/recetas/stats
      */
     @GetMapping("/stats")
