@@ -1,7 +1,6 @@
 package sistema_FitSIL.GestionUsuarios.model;
 
 import jakarta.persistence.*;
-<<<<<<< HEAD
 import sistema_FitSIL.GestionUsuarios.util.Sanitizer;
 
 import jakarta.validation.constraints.Email;
@@ -9,8 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-=======
->>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -39,7 +36,6 @@ public class Persona {
     private String contrasenia;
 
     @Enumerated(EnumType.STRING)
-<<<<<<< HEAD
     private Rol rol;
 
     public Persona() { }
@@ -51,23 +47,6 @@ public class Persona {
 
     public void setApellido(String apellido) {
         if (apellido != null) this.apellido = Sanitizer.sanitize(apellido);
-=======
-    private Rol rol; // 👈 Nuevo campo
-
-    public Persona() {
-    }
-
-    public Persona(Integer id, String nombre, String apellido, String telefono,
-                   String correo, String usuario, String contrasena, Rol rol) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.telefono = telefono;
-        this.correo = correo;
-        this.usuario = usuario;
-        this.contrasenia = contrasena;
-        this.rol = rol;
->>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
     }
 
     public void setTelefono(String telefono) {
@@ -143,19 +122,8 @@ public class Persona {
         return this.rol;
     }
 
-<<<<<<< HEAD
-=======
-    public Rol getRol() {
-        return this.rol;
-    }
-
->>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
     public void setRol(Rol rol) {
         this.rol = rol;
     }
 
-<<<<<<< HEAD
-=======
-    
->>>>>>> 5303c6a (comit in apis - gestionUusuarios and json)
 }
