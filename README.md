@@ -1,18 +1,21 @@
 # Sistema-FitSIL
-FitSIL (Santiago, Isabel, Leonargo)=SIL
+FitSIL (Santiago, Isabel, Leonardo)=SIL
+SIL- Santiago, Isabel, Leonardo
+origin/develop
 Aplicación para la gestión de rutinas de entrenamiento, registro de progreso y seguimiento fitness.
 
-El sistema está diseñado con arquitectura de **microservicios**, usando **Java + Spring Boot** para el backend principal y **Python** para servicios especializados (ej. cálculos, estadísticas o IA).
+El sistema está diseñado con arquitectura modular, donde cada módulo gestiona una funcionalidad específica del sistema (usuarios, rutinas, autenticación, estadísticas, etc.).
+El backend principal se desarrolla con Java + Spring Boot, y se proyecta integrar un microservicio adicional que se encarge de recomendar planes nutricionales para los usuarios.
 
 ------- Arquitectura Seleccionada----------
-El proyecto sigue una **arquitectura de microservicios**:
-- **API Gateway**: expone los servicios al frontend.
+El proyecto sigue una **arquitectura modular**:
 - **Backend (Java, Spring Boot)**:  
-  - Gestión de usuarios.  
-  - Rutinas y ejercicios.  
-  - Autenticación (JWT).  
-- **Microservicio en Python**:  
-  - Procesamiento de datos (ej. estadísticas de progreso).  
+  - Módulo de gestión de usuarios.  
+  - Módulo de rutinas y ejercicios.  
+  - Módulo de autenticación (JWT).
+  - Módulo de estadísticas (procesamiento de datos y reportes)
+- **Microservicio**:  
+  - Planes nutricionales para los usuarios 
   - Posible módulo de Machine Learning para recomendaciones.  
 - **Base de datos**: MySQL.  
 - **Frontend**: Web (JS/HTML/CSS) y App móvil (React Native).  
@@ -27,7 +30,27 @@ El proyecto sigue una **arquitectura de microservicios**:
 - **Comentarios y documentación** solo donde sea necesario, priorizando un código autoexplicativo.  
 - Organización del código siguiendo la **arquitectura definida** (separar controladores, servicios, repositorios, etc.).  
 - Uso de **mensajes de commit claros y descriptivos** para facilitar el historial de cambios.  
-- Aplicación de **buenas prácticas de programación**: modularidad, reutilización de código y pruebas unitarias para funciones críticas.  
+- Aplicación de **buenas prácticas de programación**: modularidad, reutilización de código y pruebas unitarias para funciones críticas.
+
+---------Módulo de Seguridad (JWT / CORS / OWASP)---------
+
+Objetivo:
+Implementar autenticación y autorización seguras en el backend mediante JWT, validación de roles (RBAC), políticas CORS y principios del OWASP Top 10.
+
+Características implementadas:
+- Creación de rutas /auth/login y /auth/register.
+- Generación de tokens JWT con campos exp, iat y roles.
+- Filtro de roles (RoleFilter) para restringir acceso a endpoints según el tipo de usuario (ADMIN / USUARIO).
+- Configuración CORS para permitir solicitudes solo desde el dominio autorizado
+- Validación de datos con Bean Validation (@NotBlank, @Email, @Size, etc.).
+- Manejo global de errores mediante la clase GlobalExceptionHandler.
+- Actualización de los diagramas C4 (Contenedores y Componentes) para incluir módulos de autenticación y seguridad.
+- Pruebas con Postman/Swagger evidenciando respuestas 200, 401, 403 según los casos.
+
+Resultados:
+- Backend con autenticación funcional usando JWT.
+- Rutas protegidas verificadas con tokens válidos/expirados.
+- Código organizado según estándares OWASP y GitFlow.
 
 
 ---Flujo de Trabajo con GitFlow-----
