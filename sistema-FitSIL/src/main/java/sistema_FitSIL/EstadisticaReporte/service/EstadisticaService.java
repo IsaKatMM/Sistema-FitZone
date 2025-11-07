@@ -5,7 +5,6 @@ import sistema_FitSIL.EstadisticaReporte.model.Estadistica;
 import sistema_FitSIL.EstadisticaReporte.repository.EstadisticaRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EstadisticaService {
@@ -17,18 +16,15 @@ public class EstadisticaService {
     }
 
     public List<Estadistica> listar() {
-        return repo.obtenerTodas();
+        return repo.findAll();
     }
 
     public void agregar(Estadistica e) {
-        repo.agregar(e);
+        repo.save(e);
     }
 
     public List<Estadistica> buscarPorUsuario(String idUsuario) {
-        return repo.obtenerTodas()
-                   .stream()
-                   .filter(e -> e.getIdUsuario().equals(idUsuario))
-                   .collect(Collectors.toList());
+        return repo.findByIdUsuario(idUsuario);
     }
 
     public double promedioEstres(String idUsuario) {

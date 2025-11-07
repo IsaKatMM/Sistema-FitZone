@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.List;
 
 @Service
 public class UsuarioService {
@@ -21,12 +22,11 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
-
     // Map para controlar intentos fallidos
     private final Map<String, Integer> intentosFallidos = new HashMap<>();
     private static final int MAX_INTENTOS = 5;
 
-     public UsuarioService(UsuarioRepository usuarioRepo,
+    public UsuarioService(UsuarioRepository usuarioRepo,
                           PasswordEncoder passwordEncoder,
                           Validator validator) {
         this.usuarioRepo = usuarioRepo;
@@ -34,34 +34,35 @@ public class UsuarioService {
         this.validator = validator;
     }
 
-     public Usuario registrarUsuario(Usuario usuario) {
-        // 1) Sanitizar campos que aceptan texto libre
+    // Registrar usuario
+    public Usuario registrarUsuario(Usuario usuario) {
+        // Sanitizar campos
         usuario.setNombre(Sanitizer.sanitize(usuario.getNombre()));
         usuario.setApellido(Sanitizer.sanitize(usuario.getApellido()));
         usuario.setUsuario(Sanitizer.sanitize(usuario.getUsuario()));
 
-        // 2) Validación programática (Bean Validation)
+        // Validación Bean
         Set<ConstraintViolation<Usuario>> violations = validator.validate(usuario);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
 
-        // 3) Codificar contraseña
+        // Codificar contraseña
         usuario.setContrasenia(passwordEncoder.encode(usuario.getContrasenia()));
 
-        // 4) Persistir (repositorio)
-        return usuarioRepo.guardar(usuario);
+        // Persistir en MySQL
+        return usuarioRepo.save(usuario);
     }
 
-      public Optional<Usuario> login(String correo, String contrasenia) {
+    // Login de usuario
+    public Optional<Usuario> login(String correo, String contrasenia) {
         int intentos = intentosFallidos.getOrDefault(correo, 0);
 
-        // Verificar si está bloqueado
         if (intentos >= MAX_INTENTOS) {
             throw new RuntimeException("Usuario bloqueado por " + MAX_INTENTOS + " intentos fallidos");
         }
 
-        Optional<Usuario> opt = usuarioRepo.buscarPorEmail(correo);
+        Optional<Usuario> opt = usuarioRepo.findByCorreo(correo);
 
         if (opt.isPresent() && passwordEncoder.matches(contrasenia, opt.get().getContrasenia())) {
             // Login exitoso -> resetear contador
@@ -79,23 +80,58 @@ public class UsuarioService {
         }
     }
 
-
+    // Obtener perfil
     public Optional<Usuario> obtenerPerfil(String correo) {
-        return usuarioRepo.buscarPorEmail(correo);
+        return usuarioRepo.findByCorreo(correo);
     }
 
+    // Actualizar perfil
     public Usuario actualizarPerfil(String correo, Usuario datos) {
-        Usuario u = usuarioRepo.buscarPorEmail(correo).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        // Solo actualizamos campos permitidos, sanitizados en la entidad
+        Usuario u = usuarioRepo.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         u.setNombre(datos.getNombre());
         u.setApellido(datos.getApellido());
         u.setTelefono(datos.getTelefono());
         u.setPeso(datos.getPeso());
         u.setAltura(datos.getAltura());
-        return usuarioRepo.actualizar(u);
+
+        return usuarioRepo.save(u);
     }
 
+    // Eliminar usuario
     public void eliminarUsuario(String correo) {
-        usuarioRepo.eliminar(correo);
+        Usuario u = usuarioRepo.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuarioRepo.delete(u);
+    }
+
+    // Listar todos los usuarios
+    public List<Usuario> listarUsuarios() {
+        return usuarioRepo.findAll();
+    }
+
+    // Cambiar rol de usuario
+    public Usuario cambiarRol(String correo, String rol) {
+        Usuario u = usuarioRepo.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        u.setRol(Enum.valueOf(sistema_FitSIL.GestionUsuarios.model.Rol.class, rol));
+        return usuarioRepo.save(u);
+    }
+
+    // Estadísticas globales
+    public String estadisticas() {
+        List<Usuario> usuarios = usuarioRepo.findAll();
+        double totalPeso = usuarios.stream().mapToDouble(Usuario::getPeso).sum();
+        double totalAltura = usuarios.stream().mapToDouble(Usuario::getAltura).sum();
+        int totalUsuarios = usuarios.size();
+
+        double promedioPeso = totalUsuarios > 0 ? totalPeso / totalUsuarios : 0;
+        double promedioAltura = totalUsuarios > 0 ? totalAltura / totalUsuarios : 0;
+
+        return String.format(
+                "{\"totalUsuarios\":%d,\"promedioPeso\":%.2f,\"promedioAltura\":%.2f}",
+                totalUsuarios, promedioPeso, promedioAltura
+        );
     }
 }

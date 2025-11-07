@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import sistema_FitSIL.GestionUsuarios.security.JwtAuthFilter;
 import sistema_FitSIL.GestionUsuarios.security.RoleFilter;
-import sistema_FitSIL.GestionUsuarios.service.JsonUserDetailsService;
+import sistema_FitSIL.GestionUsuarios.service.MyUserDetailsService;
 
 @Configuration
 @EnableMethodSecurity
@@ -34,13 +34,13 @@ public class SecurityConfig {
     private RoleFilter roleFilter;
 
     @Autowired
-    private JsonUserDetailsService userDetailsService;
+    private MyUserDetailsService userDetailsService; // 🔹 ahora usando JPA
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable()) // CSRF off porque usas JWT
+            .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/usuarios/registro", "/usuarios/login", "/auth/**").permitAll()
@@ -62,7 +62,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        provider.setUserDetailsService(userDetailsService); // 🔹 MySQL compatible
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }

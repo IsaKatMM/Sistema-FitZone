@@ -41,8 +41,8 @@ public class AuthController {
                     .body(Map.of("error", "Debe ingresar correo y contraseña"));
         }
 
-        // Buscar administrador en el repositorio
-        Optional<Administrador> adminOpt = adminRepo.buscarPorEmail(correo);
+        // Buscar administrador en la base de datos MySQL
+        Optional<Administrador> adminOpt = adminRepo.findByCorreo(correo);
         if (adminOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Usuario no encontrado"));

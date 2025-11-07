@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
@@ -14,7 +15,7 @@ import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
 import java.util.Optional;
 
 @Service
-public class JsonUserDetailsService implements UserDetailsService {
+public class MyUserDetailsService implements UserDetailsService {
 
     @Autowired
     private AdministradorRepository adminRepo;
@@ -22,23 +23,34 @@ public class JsonUserDetailsService implements UserDetailsService {
     @Autowired
     private UsuarioRepository usuarioRepo;
 
+    /**
+     * 🔹 Método principal de Spring Security para autenticar un usuario.
+     * @param correo Correo electrónico usado para login
+     * @return UserDetails con username, password y roles
+     * @throws UsernameNotFoundException si no existe el usuario
+     */
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        Optional<Administrador> admin = adminRepo.buscarPorEmail(correo);
-        if (admin.isPresent()) {
+
+        // Primero buscamos en administradores
+        Optional<Administrador> adminOpt = adminRepo.findByCorreo(correo);
+        if (adminOpt.isPresent()) {
+            Administrador admin = adminOpt.get();
             return User.builder()
-                    .username(admin.get().getCorreo())
-                    .password(admin.get().getContrasenia())
-                    .roles("ADMINISTRADOR")
+                    .username(admin.getCorreo())
+                    .password(admin.getContrasenia())
+                    .roles(admin.getRol().name()) // ADMINISTRADOR
                     .build();
         }
 
-        Optional<Usuario> user = usuarioRepo.buscarPorEmail(correo);
-        if (user.isPresent()) {
+        // Luego buscamos en usuarios normales
+        Optional<Usuario> userOpt = usuarioRepo.findByCorreo(correo);
+        if (userOpt.isPresent()) {
+            Usuario user = userOpt.get();
             return User.builder()
-                    .username(user.get().getCorreo())
-                    .password(user.get().getContrasenia())
-                    .roles(user.get().getRol().name())
+                    .username(user.getCorreo())
+                    .password(user.getContrasenia())
+                    .roles(user.getRol().name()) // USUARIO
                     .build();
         }
 
