@@ -3,6 +3,8 @@ package sistema_FitSIL.EstadisticaReporte.controller;
 import org.springframework.web.bind.annotation.*;
 import sistema_FitSIL.EstadisticaReporte.model.Estadistica;
 import sistema_FitSIL.EstadisticaReporte.service.EstadisticaService;
+import sistema_FitSIL.GestionUsuarios.service.UsuarioService;
+import sistema_FitSIL.GestionUsuarios.model.Usuario;
 
 import java.util.List;
 
@@ -11,9 +13,11 @@ import java.util.List;
 public class EstadisticaController {
 
     private final EstadisticaService service;
+    private final UsuarioService usuarioService;
 
-    public EstadisticaController(EstadisticaService service) {
+    public EstadisticaController(EstadisticaService service, UsuarioService usuarioService) {
         this.service = service;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping
@@ -21,19 +25,27 @@ public class EstadisticaController {
         return service.listar();
     }
 
-    @PostMapping
-    public String agregar(@RequestBody Estadistica e) {
-        service.agregar(e);
-        return "Estadística registrada correctamente";
+    // 🔹 Genera automáticamente estadísticas para el usuario
+    @PostMapping("/generar")
+    public Estadistica generarEstadistica(@RequestParam String email, @RequestParam int minutos) {
+        Usuario usuario = usuarioService.obtenerPerfil(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return service.generarEstadisticaAutomatica(usuario, minutos);
     }
 
-    @GetMapping("/usuario/{idUsuario}")
-    public List<Estadistica> buscarPorUsuario(@PathVariable String idUsuario) {
-        return service.buscarPorUsuario(idUsuario);
+    @GetMapping("/usuario/{email}")
+    public List<Estadistica> buscarPorUsuario(@PathVariable String email) {
+        Usuario usuario = usuarioService.obtenerPerfil(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return service.buscarPorUsuario(usuario);
     }
 
-    @GetMapping("/promedio-estres/{idUsuario}")
-    public double promedioEstres(@PathVariable String idUsuario) {
-        return service.promedioEstres(idUsuario);
+    @GetMapping("/promedio-estres/{email}")
+    public double promedioEstres(@PathVariable String email) {
+        Usuario usuario = usuarioService.obtenerPerfil(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return service.promedioEstres(usuario);
     }
 }
+
+

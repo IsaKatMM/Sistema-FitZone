@@ -1,41 +1,57 @@
 package sistema_FitSIL.GestionEjercicios.controller;
+
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.web.bind.annotation.*;
 
 import sistema_FitSIL.GestionEjercicios.model.Ejercicio;
 import sistema_FitSIL.GestionEjercicios.service.EjercicioService;
 
 @RestController
 @RequestMapping("/ejercicios")
+@CrossOrigin(origins = "*")
 public class EjercicioController {
+
     private final EjercicioService ejercicioService;
 
-    //inyeccion del servicio (lo conecta)
     public EjercicioController(EjercicioService ejercicioService) {
         this.ejercicioService = ejercicioService;
     }
 
-    // Endpoint para crear o actualizar un ejercicio
+    // Crear o actualizar un ejercicio → solo admin
     @PostMapping("/guardar")
-    public Ejercicio guardarEjercicio(@RequestBody Ejercicio ejercicio) {
-        return ejercicioService.guardarEjercicio(ejercicio);
+    public ResponseEntity<?> guardarEjercicio(@RequestBody Ejercicio ejercicio,
+                                              Authentication auth) {
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(r -> r.equals("ROLE_ADMINISTRADOR"));
+
+        if (!isAdmin) {
+            return ResponseEntity.status(403)
+                    .body("Acceso denegado: solo administradores pueden crear ejercicios");
+        }
+
+        Ejercicio guardado = ejercicioService.guardarEjercicio(ejercicio);
+        return ResponseEntity.ok(guardado);
     }
 
-    // Endpoint para obtener todos los ejercicios
+    // Obtener todos los ejercicios → todos pueden ver
     @GetMapping("/obtener")
     public List<Ejercicio> obtenerTodosLosEjercicios() {
         return ejercicioService.obtenerTodosLosEjercicios();
     }
 
-    // Endpoint para buscar un ejercicio por nombre
+    // Buscar ejercicio por nombre → todos pueden ver
     @GetMapping("/buscar")
-    public Ejercicio buscarPorNombre(@RequestParam String nombre) {
-        return ejercicioService.buscarPorNombre(nombre);
+    public ResponseEntity<?> buscarPorNombre(@RequestParam String nombre) {
+        Ejercicio ejercicio = ejercicioService.buscarPorNombre(nombre);
+        if (ejercicio == null) {
+            return ResponseEntity.status(404).body("Ejercicio no encontrado");
+        }
+        return ResponseEntity.ok(ejercicio);
     }
 }

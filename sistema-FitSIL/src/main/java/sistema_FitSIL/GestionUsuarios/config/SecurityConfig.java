@@ -1,7 +1,6 @@
 package sistema_FitSIL.GestionUsuarios.config;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +17,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import sistema_FitSIL.GestionUsuarios.security.JwtAuthFilter;
 import sistema_FitSIL.GestionUsuarios.security.RoleFilter;
 import sistema_FitSIL.GestionUsuarios.service.MyUserDetailsService;
@@ -34,27 +32,27 @@ public class SecurityConfig {
     private RoleFilter roleFilter;
 
     @Autowired
-    private MyUserDetailsService userDetailsService; // 🔹 ahora usando JPA
+    private MyUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/usuarios/registro", "/usuarios/login", "/auth/**").permitAll()
+                .requestMatchers(
+                    "/usuarios/registro",
+                    "/usuarios/login",
+                    "/auth/login",
+                    "/api/estadisticas/**", // ✅ todas las subrutas
+                    "/administradores/registro"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers
-                .contentSecurityPolicy("default-src 'self'; script-src 'self'")
-                .and()
-                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                .frameOptions().sameOrigin()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(roleFilter, JwtAuthFilter.class);
+            // ✅ Orden correcto de filtros
+            .addFilterBefore(roleFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(jwtAuthFilter, RoleFilter.class)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
@@ -62,7 +60,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService); // 🔹 MySQL compatible
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
