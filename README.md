@@ -14,6 +14,7 @@ El proyecto sigue una **arquitectura modular**:
   - Módulo de rutinas y ejercicios.  
   - Módulo de autenticación (JWT).
   - Módulo de estadísticas (procesamiento de datos y reportes)
+  - Módulo de Rutina Semanal (Conexion de usuarios con ejercicios para que cada usuario pueda crear sus rutinas)
 - **Microservicio**:  
   - Planes nutricionales para los usuarios 
   - Posible módulo de Machine Learning para recomendaciones.  
