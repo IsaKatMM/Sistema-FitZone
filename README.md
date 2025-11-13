@@ -191,6 +191,50 @@ El proyecto sigue una arquitectura modular dividida en los siguientes componente
 - `GET /administradores/usuarios/estadísticas`  
 
 ---
+## Documentación de API - Endpoints Detallados
+
+### (Gestión de usuarios)
+**Descripción:** Registra y autentica a los usuarios del sistema.  
+**Endpoints usuarios**
+
+| Ruta | Método | Descripción | Parámetros | Código de respuesta | Ejemplo de solicitud | Ejemplo de respuesta |
+|------|--------|-------------|------------|---------------------|----------------------|----------------------|
+| http://localhost:8081/usuarios/registro | POST | Registro de usuario | JSON con datos del usuario | 201 Created | `{"nombre":"Jose","apellido":"Morocho","telefono":"+593...","correo":"JOSE@example.com","usuario":"JoseAMM","contraseña":"12536","peso":60.0,"altura":1.65}` | `{"mensaje":"Usuario registrado correctamente","id":3}` |
+| http://localhost:8081/usuarios/login | POST | Iniciar Sesión | JSON con usuario y contraseña | 200 OK | `{"correo":"JoseAMM@example.com","contraseña":"..."}` | `{"token":"jwt_ge_nerado"}` |
+| http://localhost:8081/usuarios/perfil | PUT | Actualiza los datos del usuario. | email (query param) → usuario a actualizar | 200 OK | `{"nombre":"Jose","correo":"Jose@example.com","peso":76.0,"altura":1.80}` | `{"mensaje":"Usuario actualizado correctamente"}` |
+| http://localhost:8081/usuarios/perfil | DELETE | Elimina un usuario del archivo JSON. Solo elimina el archivo. JSON corresponde al correo del usuario a eliminar | email (query param, obligatorio) | 200 OK | http://localhost:8081/usuarios/perfil?email=JOSE@example.com | Usuario eliminado. JOSE@example.com |
+
+**Endpoints administrador**
+
+| Ruta | Método | Descripción | Parámetros | Código de respuesta | Ejemplo de solicitud | Ejemplo de respuesta |
+|------|--------|-------------|------------|---------------------|----------------------|----------------------|
+| http://localhost:8081/administradores/registro | POST | Crea un nuevo administrador | JSON con datos del admin | 200 Ok | `{"nombre":"Admin1","apellido":"...","correo":"admin1@ex...","departamento":"IT","codigoAdmin":"101","password":"1234"}` | `{"mensaje":"Administrador creado correctamente","id":3}` |
+| http://localhost:8081/administradores/perfil | PUT | Actualizar administrador | email (query param, obligatorio) | 200 OK | `{"id":null,"nombre":"Admin","apellido":null,"telefono":null,"correo":"admin@example.com","usuario":null,"contraseña":null,"rol":"ADMINISTRADOR","departamento":"RRHH","codigoAdmin":"102"}` | `{"mensaje":"Administrador actualizado correctamente"}` |
+| http://localhost:8081/administradores/perfil | DELETE | Elimina un administrador del archivo JSON | email (query param, obligatorio) | 200 OK | http://localhost:8081/administradores/perfil?email=admin1@example.com | Administrador admin1@exam... |
+| http://localhost:8081/administradores/usuarios | GET | Lista todos los usuarios registrados (solo admin). | - | 200 OK | - | Lista de usuarios |
+| http://localhost:8081/administradores/usuarios/rol?email=usu | PUT | Cambia el rol de un usuario. | email (query param, obligatorio) | 200 OK | `{"rol":"ADMINISTRADOR"}` | `{"mensaje":"Rol actualizado correctamente"}` |
+
+---
+
+### (Gestión de ejercicios)
+**Descripción:** Registra y muestra los ejercicios
+
+| Ruta | Método | Descripción | Parámetros | Código de respuesta | Ejemplo de solicitud | Ejemplo de respuesta |
+|------|--------|-------------|------------|---------------------|----------------------|----------------------|
+| http://localhost:8081/ejercicios | Get | Muestra la lista de los ejercicios que se han guardado en la aplicación con sus atributos (nombre, descripción y el músculo o parte del cuerpo que trabaja). | JSON con datos del ejercicio | 200 Ok | `{"nombre":"press banca","descripcion":"Ejercicio para pecho","musculoTrabajado":"pecho superior"}` | `{"id":"1","nombre":"press banca","descripcion":"Ejercicio para pecho","musculoTrabajado":"pecho superior"}` |
+| http://localhost:8081/ejercicios/guardar | Post | Permite guardar la información de los ejercicios (nombre, descripción y el músculo o parte del cuerpo que se trabaja). | - | 200 Ok | - | Lista de usuarios |
+
+---
+
+### (Estadísticas y Reportes)
+**Descripción:** Informa a los usuarios sus progresos, rendimiento y avances de sus rutinas.
+
+| Ruta | Método | Descripción | Parámetros | Código de respuesta | Ejemplo de solicitud | Ejemplo de respuesta |
+|------|--------|-------------|------------|---------------------|----------------------|----------------------|
+| http://localhost:8081/api/estadisticas | Get | Muestra información sobre el usuario y su progreso (id, fecha, calorías quemadas, minutos de ejercicio, niveles de estrés). | Json con la información de las métricas y estadísticas | 200 Ok | - | `{"idUsuario":"U003","fecha":"2020-4-4","caloriasQuemadas":140.6}` |
+| http://localhost:8081/api/estadisticas | Post | Permite guardar información del usuario junto a su respectivo nivel de progreso | - | 200 Ok | `{"idUsuario":"U004","fecha":"2021-9-5","caloriasQuemadas":170.6,"minutosEjercicio":60,"nivelEstres":3.6}` | Estadística registrada correctamente |
+
+
 
 ## Flujo de Trabajo con GitFlow
 
