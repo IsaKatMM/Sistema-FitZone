@@ -243,7 +243,7 @@ El proyecto sigue una arquitectura modular dividida en los siguientes componente
 - `develop` → Rama de integración de features  
 
 ### Ramas de Features
-- `feature/Espinoza` → Módulo de rutinas  
-- `feature/Jimenez` → Módulo de ejercicios  
-- `feature/Morocho` → Módulo de estadísticas  
+- `feature/Espinoza` → Módulo de estadisticas
+- `feature/Jimenez` → Módulo de ejercicios y Modulo de rutinas 
+- `feature/Morocho` → Módulo de usuarios y administradores
 
