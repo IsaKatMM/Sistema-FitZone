@@ -486,4 +486,120 @@
   .form-actions button {
     width: 100%;
   }
+
+
+
+
+  /* ============================= */
+/* Weekly Progress */
+/* ============================= */
+
+.weekly-progress-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.dark .weekly-progress-card {
+  background: #1e293b;
+  border-color: rgba(71, 85, 105, 0.5);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+}
+
+.weekly-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.weekly-progress-title {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.dark .weekly-progress-title {
+  color: #ffffff;
+}
+
+.weekly-progress-subtitle {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.dark .weekly-progress-subtitle {
+  color: #94a3b8;
+}
+
+.weekly-progress-total {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .weekly-progress-total {
+  color: #ffffff;
+}
+
+/* Chart */
+.weekly-chart {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: end;
+  gap: 0.75rem;
+  height: 180px;
+}
+
+.weekly-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.weekly-bar {
+  width: 100%;
+  border-radius: 999px 999px 0 0;
+  background: rgba(249, 115, 22, 0.3);
+  transition: all 0.3s ease;
+}
+
+.dark .weekly-bar {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.weekly-bar.active {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 6px 15px rgba(249, 115, 22, 0.4);
+}
+
+.dark .weekly-bar.active {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+}
+
+.weekly-day {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dark .weekly-day {
+  color: #94a3b8;
+}
+
+.weekly-day.active {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .weekly-day.active {
+  color: #ffffff;
+}
+
 }
