@@ -15,7 +15,8 @@ public class RoleFilter extends OncePerRequestFilter {
     private static final List<String> PUBLIC_PATHS = List.of(
             "/usuarios/registro",
             "/usuarios/login",
-            "/auth/login"
+            "/auth/login",
+            "/administradores/registro"
     );
 
     @Override

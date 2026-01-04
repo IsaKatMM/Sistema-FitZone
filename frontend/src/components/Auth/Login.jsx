@@ -175,8 +175,8 @@ const Login = () => {
         {/* Enlace a Registro */}
         <div className="register-link">
           <p className="register-text">
-            Don't have an account? 
-            <Link to="/register" className="register-link-text"> Register</Link>
+            ¿No tienes una cuenta?
+            <Link to="/register" className="register-link-text"> Registrate</Link>
           </p>
         </div>
       </div>

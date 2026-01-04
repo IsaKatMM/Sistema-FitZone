@@ -12,7 +12,7 @@ import java.util.Optional;
 public class UsuarioRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String carpetaUsuarios = "src/main/java/sistema_FitSIL/dataUsuarios/"; // ruta dentro del proyecto
+    private final String carpetaUsuarios = "../dataUsuarios/"; // ruta dentro del proyecto
 
     public UsuarioRepository() {
         File carpeta = new File(carpetaUsuarios);

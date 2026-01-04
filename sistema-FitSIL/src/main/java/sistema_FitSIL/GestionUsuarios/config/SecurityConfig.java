@@ -20,7 +20,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import sistema_FitSIL.GestionUsuarios.security.JwtAuthFilter;
-import sistema_FitSIL.GestionUsuarios.security.RoleFilter;
 import sistema_FitSIL.GestionUsuarios.service.JsonUserDetailsService;
 
 @Configuration
@@ -31,30 +30,26 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     @Autowired
-    private RoleFilter roleFilter;
-
-    @Autowired
     private JsonUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-            .csrf(csrf -> csrf.disable()) // CSRF off porque usas JWT
+            .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/usuarios/registro", "/usuarios/login", "/auth/**").permitAll()
+                .requestMatchers(
+                    "/usuarios/registro",
+                    "/usuarios/login",
+                    "/auth/login",
+                    "/administradores/registro"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers
-                .contentSecurityPolicy("default-src 'self'; script-src 'self'")
-                .and()
-                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                .frameOptions().sameOrigin()
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(roleFilter, JwtAuthFilter.class);
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
