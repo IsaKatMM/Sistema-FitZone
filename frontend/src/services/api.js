@@ -1,7 +1,7 @@
 // src/services/api.js
 import axios from 'axios';
 
-// IMPORTANTE: Cambiar a tu puerto y ruta del backend
+// ✅ SIN /api porque tus controladores no lo usan
 const API_BASE_URL = 'http://localhost:8081';
 
 const api = axios.create({

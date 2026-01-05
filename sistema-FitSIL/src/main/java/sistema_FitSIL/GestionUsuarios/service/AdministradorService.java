@@ -1,18 +1,40 @@
 package sistema_FitSIL.GestionUsuarios.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdministradorService {
 
     @Autowired
     private AdministradorRepository adminRepository;
+
+ 
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // 🆕 Login de administrador
+    public Optional<Administrador> login(String correo, String contrasenia) {
+        Optional<Administrador> adminOpt = adminRepository.buscarPorEmail(correo);
+        
+        if (adminOpt.isPresent()) {
+            Administrador admin = adminOpt.get();
+            // Verificar contraseña encriptada
+            if (passwordEncoder.matches(contrasenia, admin.getContrasenia())) {
+                return Optional.of(admin);
+            }
+        }
+        
+        return Optional.empty();
+    }
 
     // Crear administrador
     public Administrador registrarAdmin(Administrador admin) {

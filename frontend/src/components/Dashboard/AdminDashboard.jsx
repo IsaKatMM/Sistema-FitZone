@@ -2,35 +2,40 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
-import './Dashboard.css';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [admin, setAdmin] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    telefono: '',
-    departamento: '',
-    codigoAdmin: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [activeSection, setActiveSection] = useState('dashboard');
   const navigate = useNavigate();
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
     if (currentUser) {
       setAdmin(currentUser);
-      setFormData({
-        nombre: currentUser.nombre || '',
-        apellido: currentUser.apellido || '',
-        telefono: currentUser.telefono || '',
-        departamento: currentUser.departamento || '',
-        codigoAdmin: currentUser.codigoAdmin || ''
-      });
+    }
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setDarkMode(savedTheme === 'dark');
     }
   }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  const toggleTheme = () => {
+    setDarkMode(!darkMode);
+  };
 
   const handleLogout = () => {
     if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
@@ -38,339 +43,325 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleEdit = () => {
-    setEditMode(true);
-    setMessage({ type: '', text: '' });
-  };
-
-  const handleCancel = () => {
-    setEditMode(false);
-    setFormData({
-      nombre: admin.nombre || '',
-      apellido: admin.apellido || '',
-      telefono: admin.telefono || '',
-      departamento: admin.departamento || '',
-      codigoAdmin: admin.codigoAdmin || ''
-    });
-    setMessage({ type: '', text: '' });
-  };
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ type: '', text: '' });
-
-    try {
-      const updatedData = {
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        telefono: formData.telefono,
-        departamento: formData.departamento,
-        codigoAdmin: parseInt(formData.codigoAdmin)
-      };
-
-      const updated = await authService.updatePerfil(admin.correo, updatedData);
-      setAdmin(updated);
-      setEditMode(false);
-      setMessage({ type: 'success', text: '¡Perfil actualizado exitosamente!' });
-    } catch (error) {
-      console.error('Error al actualizar:', error);
-      setMessage({ 
-        type: 'error', 
-        text: error.message || 'Error al actualizar el perfil' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm('⚠️ ¿Estás seguro de eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-      try {
-        await authService.deletePerfil(admin.correo);
-        alert('Cuenta eliminada exitosamente');
-        authService.logout();
-      } catch (error) {
-        console.error('Error al eliminar:', error);
-        setMessage({ 
-          type: 'error', 
-          text: error.message || 'Error al eliminar la cuenta' 
-        });
-      }
-    }
-  };
-
   if (!admin) {
     return (
-      <div className="dashboard-container">
-        <div className="loading">Cargando...</div>
+      <div className={`admin-dashboard-modern ${darkMode ? 'dark' : ''}`}>
+        <div className="loading-state">Cargando...</div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-container admin-dashboard">
-      <nav className="dashboard-nav admin-nav">
-        <div className="nav-brand">
-          <h2>⚙️ FitZone Admin</h2>
+    <div className={`admin-dashboard-modern ${darkMode ? 'dark' : ''}`}>
+      {/* Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="sidebar-logo">
+          <span className="material-icons logo-icon">fitness_center</span>
         </div>
-        <div className="nav-user">
-          <span className="user-greeting">Admin: {admin.nombre}</span>
-          <button onClick={handleLogout} className="btn-logout">
-            Cerrar Sesión
+        
+        <nav className="sidebar-nav">
+          <button 
+            className={`nav-item ${activeSection === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveSection('dashboard')}
+          >
+            <span className="material-icons">dashboard</span>
+            <span className="nav-text">Dashboard</span>
           </button>
-        </div>
-      </nav>
+          
+          <button 
+            className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveSection('users')}
+          >
+            <span className="material-icons">group</span>
+            <span className="nav-text">Usuarios</span>
+          </button>
+          
+          <button 
+            className={`nav-item ${activeSection === 'exercises' ? 'active' : ''}`}
+            onClick={() => setActiveSection('exercises')}
+          >
+            <span className="material-icons">exercise</span>
+            <span className="nav-text">Ejercicios</span>
+          </button>
+          
+          <button 
+            className={`nav-item ${activeSection === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveSection('analytics')}
+          >
+            <span className="material-icons">analytics</span>
+            <span className="nav-text">Reportes</span>
+          </button>
+        </nav>
+      </aside>
 
-      <div className="dashboard-content">
-        <div className="dashboard-header">
-          <h1>Panel de Administración</h1>
-          <span className="user-badge admin-badge">👨‍💼 Administrador</span>
-        </div>
+      {/* Main Content */}
+      <main className="admin-main-content">
+        {/* Header */}
+        <header className="admin-header">
+          <h1 className="admin-title">Admin Dashboard</h1>
+          
+          <div className="admin-header-actions">
+            <button onClick={toggleTheme} className="theme-toggle-admin">
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+            
+            <button className="notification-btn">
+              <span className="material-icons">notifications</span>
+            </button>
+            
+            <div className="admin-avatar" onClick={() => setShowProfileModal(true)}>
+              <span className="avatar-initials">
+                {admin.nombre?.charAt(0)}{admin.apellido?.charAt(0) || 'A'}
+              </span>
+            </div>
+          </div>
+        </header>
 
-        {message.text && (
-          <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'}`}>
-            {message.text}
+        {/* Modal de perfil */}
+        {showProfileModal && (
+          <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+            <div className="modal-content profile-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="profile-header-content">
+                  <div className="profile-avatar-large admin-profile">
+                    <span className="avatar-initials-large">
+                      {admin.nombre?.charAt(0)}{admin.apellido?.charAt(0) || 'A'}
+                    </span>
+                  </div>
+                  <div className="profile-header-text">
+                    <h3>{admin.nombre} {admin.apellido}</h3>
+                    <p className="profile-role">Administrador</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowProfileModal(false)} className="close-btn">
+                  <span className="material-icons">close</span>
+                </button>
+              </div>
+
+              <div className="profile-modal-body">
+                <div className="profile-info-section">
+                  <h4 className="section-title">
+                    <span className="material-icons">admin_panel_settings</span>
+                    Información del Administrador
+                  </h4>
+                  
+                  <div className="profile-info-list">
+                    <div className="profile-info-item">
+                      <div className="info-icon-wrapper">
+                        <span className="material-icons">badge</span>
+                      </div>
+                      <div className="info-text">
+                        <span className="info-label-profile">Usuario</span>
+                        <span className="info-value-profile">@{admin.usuario}</span>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <div className="info-icon-wrapper">
+                        <span className="material-icons">email</span>
+                      </div>
+                      <div className="info-text">
+                        <span className="info-label-profile">Correo</span>
+                        <span className="info-value-profile">{admin.correo}</span>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <div className="info-icon-wrapper">
+                        <span className="material-icons">phone</span>
+                      </div>
+                      <div className="info-text">
+                        <span className="info-label-profile">Teléfono</span>
+                        <span className="info-value-profile">{admin.telefono || 'No registrado'}</span>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <div className="info-icon-wrapper">
+                        <span className="material-icons">business</span>
+                      </div>
+                      <div className="info-text">
+                        <span className="info-label-profile">Departamento</span>
+                        <span className="info-value-profile">{admin.departamento || 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <div className="info-icon-wrapper">
+                        <span className="material-icons">key</span>
+                      </div>
+                      <div className="info-text">
+                        <span className="info-label-profile">Código Admin</span>
+                        <span className="info-value-profile">{admin.codigoAdmin || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="profile-modal-actions">
+                  <button onClick={handleLogout} className="btn-logout-profile">
+                    <span className="material-icons">logout</span>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="dashboard-grid">
-          {/* Tarjeta de Perfil Admin */}
-          <div className="card">
-            <div className="card-header">
-              <h3>👨‍💼 Información del Administrador</h3>
-              {!editMode && (
-                <button onClick={handleEdit} className="btn-edit">
-                  ✏️ Editar
-                </button>
-              )}
+        {/* Content Area */}
+        <div className="admin-content">
+          {/* Statistics Cards */}
+          <section className="stats-section">
+            <div className="stat-card-admin">
+              <p className="stat-label-admin">Total Usuarios</p>
+              <p className="stat-value-admin">0</p>
             </div>
-            <div className="card-body">
-              {editMode ? (
-                <form onSubmit={handleUpdate}>
-                  <div className="form-group">
-                    <label>Nombre:</label>
-                    <input
-                      type="text"
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleChange}
-                      className="form-control"
-                      required
-                      minLength="3"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Apellido:</label>
-                    <input
-                      type="text"
-                      name="apellido"
-                      value={formData.apellido}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Teléfono:</label>
-                    <input
-                      type="tel"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleChange}
-                      className="form-control"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Departamento:</label>
-                    <input
-                      type="text"
-                      name="departamento"
-                      value={formData.departamento}
-                      onChange={handleChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Código de Administrador:</label>
-                    <input
-                      type="number"
-                      name="codigoAdmin"
-                      value={formData.codigoAdmin}
-                      onChange={handleChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-actions">
-                    <button type="submit" className="btn-primary" disabled={loading}>
-                      {loading ? 'Guardando...' : '💾 Guardar'}
-                    </button>
-                    <button type="button" onClick={handleCancel} className="btn-secondary">
-                      ❌ Cancelar
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="info-list">
-                  <div className="info-item">
-                    <strong>Nombre:</strong> {admin.nombre} {admin.apellido}
-                  </div>
-                  <div className="info-item">
-                    <strong>Usuario:</strong> @{admin.usuario}
-                  </div>
-                  <div className="info-item">
-                    <strong>Correo:</strong> {admin.correo}
-                  </div>
-                  <div className="info-item">
-                    <strong>Teléfono:</strong> {admin.telefono || 'No registrado'}
-                  </div>
-                  <div className="info-item">
-                    <strong>Departamento:</strong> {admin.departamento}
-                  </div>
-                  <div className="info-item">
-                    <strong>Código Admin:</strong> {admin.codigoAdmin}
-                  </div>
-                </div>
-              )}
+            
+            <div className="stat-card-admin">
+              <p className="stat-label-admin">Activos Hoy</p>
+              <p className="stat-value-admin">0</p>
             </div>
-          </div>
-
-          {/* Estadísticas */}
-          <div className="card">
-            <div className="card-header">
-              <h3>📊 Estadísticas del Sistema</h3>
+            
+            <div className="stat-card-admin">
+              <p className="stat-label-admin">Rutinas Creadas</p>
+              <p className="stat-value-admin">0</p>
             </div>
-            <div className="card-body">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-icon">👥</div>
-                  <div className="stat-info">
-                    <div className="stat-value">0</div>
-                    <div className="stat-label">Usuarios</div>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-icon">🏋️</div>
-                  <div className="stat-info">
-                    <div className="stat-value">0</div>
-                    <div className="stat-label">Rutinas</div>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-icon">💪</div>
-                  <div className="stat-info">
-                    <div className="stat-value">0</div>
-                    <div className="stat-label">Ejercicios</div>
-                  </div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-icon">📈</div>
-                  <div className="stat-info">
-                    <div className="stat-value">0</div>
-                    <div className="stat-label">Activos Hoy</div>
-                  </div>
+            
+            <div className="stat-card-admin">
+              <p className="stat-label-admin">Total Ejercicios</p>
+              <p className="stat-value-admin">0</p>
+            </div>
+          </section>
+
+          {/* User Management Section */}
+          {activeSection === 'users' && (
+            <section className="management-section">
+              <div className="section-header">
+                <h2 className="section-title-main">Gestión de Usuarios</h2>
+                <div className="section-actions">
+                  <button className="btn-secondary-admin">
+                    <span className="material-icons">upload</span>
+                    Exportar
+                  </button>
+                  <button className="btn-primary-admin">
+                    <span className="material-icons">add</span>
+                    Agregar Usuario
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Gestión de Usuarios */}
-          <div className="card full-width">
-            <div className="card-header">
-              <h3>👥 Gestión de Usuarios</h3>
-              <button className="btn-primary">➕ Agregar Usuario</button>
-            </div>
-            <div className="card-body">
-              <div className="empty-state">
-                <p>📋 Lista de usuarios registrados</p>
-                <p className="text-muted">
-                  Próximamente podrás ver, editar y gestionar todos los usuarios del sistema
-                </p>
+              <div className="search-bar">
+                <span className="material-icons search-icon">search</span>
+                <input 
+                  type="text" 
+                  placeholder="Buscar usuarios..."
+                  className="search-input"
+                />
               </div>
-            </div>
-          </div>
 
-          {/* Gestión de Rutinas */}
-          <div className="card full-width">
-            <div className="card-header">
-              <h3>🏋️ Gestión de Rutinas</h3>
-              <button className="btn-primary">➕ Crear Rutina</button>
-            </div>
-            <div className="card-body">
-              <div className="empty-state">
-                <p>📝 Rutinas de ejercicio del sistema</p>
-                <p className="text-muted">
-                  Próximamente podrás crear, editar y asignar rutinas a los usuarios
-                </p>
+              <div className="table-container">
+                <div className="empty-state-admin">
+                  <span className="material-icons empty-icon">group</span>
+                  <p>No hay usuarios registrados</p>
+                  <p className="empty-subtitle">Los usuarios aparecerán aquí</p>
+                </div>
               </div>
-            </div>
-          </div>
+            </section>
+          )}
 
-          {/* Accesos Rápidos */}
-          <div className="card">
-            <div className="card-header">
-              <h3>⚡ Accesos Rápidos</h3>
-            </div>
-            <div className="card-body">
-              <div className="quick-actions">
-                <button className="quick-action-btn">
-                  <span className="action-icon">👥</span>
-                  <span>Ver Usuarios</span>
-                </button>
-                <button className="quick-action-btn">
-                  <span className="action-icon">🏋️</span>
-                  <span>Crear Rutina</span>
-                </button>
-                <button className="quick-action-btn">
-                  <span className="action-icon">💪</span>
-                  <span>Ejercicios</span>
-                </button>
-                <button className="quick-action-btn">
-                  <span className="action-icon">📊</span>
-                  <span>Reportes</span>
-                </button>
+          {/* Exercise Management */}
+          {activeSection === 'exercises' && (
+            <section className="management-section">
+              <div className="section-header">
+                <h2 className="section-title-main">Biblioteca de Ejercicios</h2>
+                <div className="section-actions">
+                  <button className="btn-secondary-admin">
+                    <span className="material-icons">category</span>
+                    Categorías
+                  </button>
+                  <button className="btn-primary-admin">
+                    <span className="material-icons">add</span>
+                    Agregar Ejercicio
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Actividad Reciente */}
-          <div className="card">
-            <div className="card-header">
-              <h3>🕒 Actividad Reciente</h3>
-            </div>
-            <div className="card-body">
-              <div className="empty-state">
-                <p>📝 Últimas acciones en el sistema</p>
-                <p className="text-muted">
-                  Aquí se mostrarán las últimas actividades de usuarios y administradores
-                </p>
+              <div className="table-container">
+                <div className="empty-state-admin">
+                  <span className="material-icons empty-icon">exercise</span>
+                  <p>No hay ejercicios registrados</p>
+                  <p className="empty-subtitle">Comienza agregando ejercicios</p>
+                </div>
               </div>
-            </div>
-          </div>
+            </section>
+          )}
+
+          {/* Analytics */}
+          {activeSection === 'analytics' && (
+            <section className="management-section">
+              <h2 className="section-title-main">Usuarios Activos (Últimos 30 Días)</h2>
+              
+              <div className="chart-container">
+                <div className="empty-state-admin">
+                  <span className="material-icons empty-icon">analytics</span>
+                  <p>Estadísticas no disponibles</p>
+                  <p className="empty-subtitle">Los datos aparecerán cuando haya actividad</p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Dashboard Overview */}
+          {activeSection === 'dashboard' && (
+            <>
+              <section className="management-section">
+                <h2 className="section-title-main">Resumen del Sistema</h2>
+                <div className="dashboard-grid">
+                  <div className="dashboard-card">
+                    <div className="dashboard-card-icon users">
+                      <span className="material-icons">group</span>
+                    </div>
+                    <div className="dashboard-card-content">
+                      <h3>Usuarios</h3>
+                      <p>Gestionar usuarios del sistema</p>
+                      <button onClick={() => setActiveSection('users')} className="card-action-btn">
+                        Ver más →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="dashboard-card">
+                    <div className="dashboard-card-icon exercises">
+                      <span className="material-icons">exercise</span>
+                    </div>
+                    <div className="dashboard-card-content">
+                      <h3>Ejercicios</h3>
+                      <p>Biblioteca de ejercicios</p>
+                      <button onClick={() => setActiveSection('exercises')} className="card-action-btn">
+                        Ver más →
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="dashboard-card">
+                    <div className="dashboard-card-icon analytics">
+                      <span className="material-icons">analytics</span>
+                    </div>
+                    <div className="dashboard-card-content">
+                      <h3>Reportes</h3>
+                      <p>Estadísticas y análisis</p>
+                      <button onClick={() => setActiveSection('analytics')} className="card-action-btn">
+                        Ver más →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </>
+          )}
         </div>
-
-        {/* Zona de Peligro */}
-        <div className="danger-zone">
-          <h4>⚠️ Zona de Peligro</h4>
-          <p>Una vez que elimines tu cuenta de administrador, no hay vuelta atrás.</p>
-          <button onClick={handleDelete} className="btn-danger">
-            🗑️ Eliminar Cuenta
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };

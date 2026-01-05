@@ -16,6 +16,7 @@ public class RoleFilter extends OncePerRequestFilter {
             "/usuarios/registro",
             "/usuarios/login",
             "/auth/login",
+            "/administradores/login",
             "/administradores/registro"
     );
 

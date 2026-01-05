@@ -42,7 +42,8 @@ public class SecurityConfig {
                     "/usuarios/registro",
                     "/usuarios/login",
                     "/auth/login",
-                    "/administradores/registro"
+                    "/administradores/registro",
+                    "/administradores/login"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

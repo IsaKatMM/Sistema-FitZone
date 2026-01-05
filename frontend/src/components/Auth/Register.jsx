@@ -145,6 +145,10 @@ const Register = () => {
           peso: parseFloat(datos.peso) || 0,
           altura: parseFloat(datos.altura) || 0
         };
+        
+        // ✅ Registrar USUARIO
+        await authService.register(dataToSend);
+        
       } else {
         dataToSend = {
           nombre: datos.nombre,
@@ -157,9 +161,11 @@ const Register = () => {
           departamento: datos.departamento,
           codigoAdmin: parseInt(datos.codigoAdmin)
         };
+        
+        // ✅ Registrar ADMINISTRADOR (método diferente)
+        await authService.registerAdmin(dataToSend);
       }
       
-      await authService.register(dataToSend);
       alert('¡Registro exitoso! Ahora puedes iniciar sesión');
       navigate('/login');
       
