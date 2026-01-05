@@ -1,0 +1,18 @@
+.actividad {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.actividad-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.actividad-item p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}

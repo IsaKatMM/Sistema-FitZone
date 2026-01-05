@@ -1,44 +1,36 @@
+import "./FitEstadisticas.css";
 import EstadisticaCard from "../Componentes/EstadisticaCard";
 import FiltroRango from "../Componentes/FiltroRango";
 import GraficoLinea from "../Componentes/GraficoLinea";
 import GraficoBarras from "../Componentes/GraficoBarras";
 import ActividadReciente from "../Componentes/ActividadReciente";
+import Reportes from "../Componentes/Reportes";
+
 
 export default function FitEstadisticas() {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="page">
+      <h1>Estadisticas/Reportes</h1>
 
-      {/* HEADER */}
-      <div className="p-4 text-center">
-        <h1 className="text-2xl font-bold">Statistics</h1>
+      <div className="stats">
+        <EstadisticaCard titulo="Entrenamientos totales" valor="28" />
+        <EstadisticaCard titulo="Promedio Duración" valor="45 min" />
+        <EstadisticaCard titulo="Calorias quemadas" valor="12,450" />
       </div>
 
-      {/* RESUMEN */}
-      <div className="flex flex-wrap gap-4 p-4">
-        <EstadisticaCard titulo="Total Workouts" valor="28" />
-        <EstadisticaCard titulo="Avg. Duration" valor="45 min" />
-        <EstadisticaCard titulo="Calories Burned" valor="12,450" />
-      </div>
+      <FiltroRango />
 
-      {/* FILTRO */}
-      <div className="px-4">
-        <FiltroRango />
-      </div>
-
-      {/* GRÁFICOS */}
-      <div className="flex flex-col gap-6 p-4">
+      <div className="graficos">
         <GraficoLinea />
         <GraficoBarras />
       </div>
 
-      {/* ACTIVIDAD */}
-      <h2 className="px-4 pt-2 pb-3 text-lg font-bold">
-        Recent Activity
-      </h2>
+      <h2>Actividad reciente</h2>
+      <ActividadReciente />
 
-      <div className="px-4 pb-32">
-        <ActividadReciente />
-      </div>
+      <h2>Reportes</h2>
+      <Reportes />
+
     </div>
   );
 }
