@@ -1,7 +1,19 @@
 package sistema_FitSIL.EstadisticaReporte.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "estadisticas")
 public class Estadistica {
-    private String idUsuario;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private sistema_FitSIL.GestionUsuarios.model.Usuario usuario;
+
     private String fecha;
     private double caloriasQuemadas;
     private int minutosEjercicio;
@@ -9,8 +21,9 @@ public class Estadistica {
 
     public Estadistica() {}
 
-    public Estadistica(String idUsuario, String fecha, double caloriasQuemadas, int minutosEjercicio, double nivelEstres) {
-        this.idUsuario = idUsuario;
+    public Estadistica(sistema_FitSIL.GestionUsuarios.model.Usuario usuario,
+                       String fecha, double caloriasQuemadas, int minutosEjercicio, double nivelEstres) {
+        this.usuario = usuario;
         this.fecha = fecha;
         this.caloriasQuemadas = caloriasQuemadas;
         this.minutosEjercicio = minutosEjercicio;
@@ -18,8 +31,11 @@ public class Estadistica {
     }
 
     // Getters y Setters
-    public String getIdUsuario() { return idUsuario; }
-    public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public sistema_FitSIL.GestionUsuarios.model.Usuario getUsuario() { return usuario; }
+    public void setUsuario(sistema_FitSIL.GestionUsuarios.model.Usuario usuario) { this.usuario = usuario; }
 
     public String getFecha() { return fecha; }
     public void setFecha(String fecha) { this.fecha = fecha; }

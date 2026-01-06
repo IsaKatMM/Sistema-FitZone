@@ -1,0 +1,12 @@
+{
+  "id" : null,
+  "nombre" : "Maria",
+  "apellido" : "Velasquez",
+  "telefono" : "0999999999",
+  "correo" : "maria@example.com",
+  "usuario" : "adminMaria",
+  "contrasenia" : "$2a$10$2OYE0Xy.z0SA5fzYmc1xI.z6jXNasMqWutXddSVW7oHN8I2f/3.B.",
+  "rol" : "ADMINISTRADOR",
+  "departamento" : "Finanzas",
+  "codigoAdmin" : 300
+}
