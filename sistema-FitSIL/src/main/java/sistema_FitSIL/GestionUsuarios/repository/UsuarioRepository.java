@@ -1,53 +1,92 @@
 package sistema_FitSIL.GestionUsuarios.repository;
 
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class UsuarioRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String carpetaUsuarios = "../dataUsuarios/"; // ruta dentro del proyecto
+    private final String archivoUsuarios = "../data/usuarios.json";
 
     public UsuarioRepository() {
-        File carpeta = new File(carpetaUsuarios);
+        File carpeta = new File("../data");
         if (!carpeta.exists()) {
             carpeta.mkdirs();
-            System.out.println("Carpeta dataUsuarios creada en: " + carpeta.getAbsolutePath());
+            System.out.println("Carpeta data creada en: " + carpeta.getAbsolutePath());
+        }
+        
+        // Crear archivo vacío si no existe
+        File file = new File(archivoUsuarios);
+        if (!file.exists()) {
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, new ArrayList<Usuario>());
+                System.out.println("Archivo usuarios.json creado");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    // Guardar usuario
+    // Leer todos los usuarios del archivo
+    private List<Usuario> leerTodos() {
+        try {
+            File file = new File(archivoUsuarios);
+            return objectMapper.readValue(file, new TypeReference<List<Usuario>>() {});
+        } catch (IOException e) {
+            System.err.println("Error al leer usuarios: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    // Guardar toda la lista en el archivo
+    private void guardarTodos(List<Usuario> usuarios) {
+        try {
+            File file = new File(archivoUsuarios);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, usuarios);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar usuarios", e);
+        }
+    }
+
+    // Guardar o actualizar usuario
     public Usuario guardar(Usuario usuario) {
         if (usuario.getCorreo() == null || usuario.getCorreo().isEmpty()) {
             throw new RuntimeException("El correo del usuario no puede ser nulo");
         }
-        try {
-            File file = new File(carpetaUsuarios + usuario.getCorreo() + ".json");
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, usuario);
-            System.out.println("Usuario guardado en: " + file.getAbsolutePath());
-        } catch (IOException e) {
-            throw new RuntimeException("Error al guardar usuario", e);
+
+        List<Usuario> usuarios = leerTodos();
+        
+        // Buscar si ya existe y actualizarlo
+        Optional<Usuario> existente = usuarios.stream()
+            .filter(u -> u.getCorreo().equals(usuario.getCorreo()))
+            .findFirst();
+        
+        if (existente.isPresent()) {
+            usuarios.remove(existente.get());
         }
+        
+        usuarios.add(usuario);
+        guardarTodos(usuarios);
+        
+        System.out.println("Usuario guardado: " + usuario.getCorreo());
         return usuario;
     }
 
     // Buscar por correo
     public Optional<Usuario> buscarPorEmail(String email) {
-        try {
-            File file = new File(carpetaUsuarios + email + ".json");
-            if (!file.exists()) return Optional.empty();
-            Usuario usuario = objectMapper.readValue(file, Usuario.class);
-            return Optional.of(usuario);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        List<Usuario> usuarios = leerTodos();
+        return usuarios.stream()
+            .filter(u -> u.getCorreo().equals(email))
+            .findFirst();
     }
 
     // Actualizar usuario
@@ -57,7 +96,14 @@ public class UsuarioRepository {
 
     // Eliminar usuario
     public void eliminar(String email) {
-        File file = new File(carpetaUsuarios + email + ".json");
-        if (file.exists()) file.delete();
+        List<Usuario> usuarios = leerTodos();
+        usuarios.removeIf(u -> u.getCorreo().equals(email));
+        guardarTodos(usuarios);
+        System.out.println("Usuario eliminado: " + email);
+    }
+
+    // Listar todos los usuarios
+    public List<Usuario> listarTodos() {
+        return leerTodos();
     }
 }

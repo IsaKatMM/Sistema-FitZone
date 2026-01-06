@@ -2,7 +2,10 @@ package sistema_FitSIL.GestionUsuarios.repository;
 
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
+import sistema_FitSIL.GestionUsuarios.model.Rol;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.io.File;
@@ -15,87 +18,116 @@ import java.util.Optional;
 public class AdministradorRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    // ✅ Ahora los datos se guardan dentro de tu estructura visible del proyecto
-    private final String carpetaAdmins = "../dataAdministradores/";
-    private final String carpetaUsuarios = "../dataUsuarios/";
+    private final String archivoAdmins = "../data/administradores.json";
+    
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public AdministradorRepository() {
-        new File(carpetaAdmins).mkdirs();
-        new File(carpetaUsuarios).mkdirs();
+        File carpeta = new File("../data");
+        if (!carpeta.exists()) {
+            carpeta.mkdirs();
+        }
+        
+        // Crear archivo vacío si no existe
+        File file = new File(archivoAdmins);
+        if (!file.exists()) {
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, new ArrayList<Administrador>());
+                System.out.println("Archivo administradores.json creado");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    // 🔹 Guardar administrador en JSON
-    public Administrador guardar(Administrador admin) {
-        if (admin.getCorreo() == null || admin.getCorreo().isEmpty())
-            throw new RuntimeException("Correo obligatorio");
-
+    // Leer todos los administradores del archivo
+    private List<Administrador> leerTodos() {
         try {
-            File file = new File(carpetaAdmins + admin.getCorreo() + ".json");
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, admin);
+            File file = new File(archivoAdmins);
+            return objectMapper.readValue(file, new TypeReference<List<Administrador>>() {});
         } catch (IOException e) {
-            throw new RuntimeException("Error al guardar administrador", e);
+            System.err.println("Error al leer administradores: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    // Guardar toda la lista en el archivo
+    private void guardarTodos(List<Administrador> admins) {
+        try {
+            File file = new File(archivoAdmins);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, admins);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar administradores", e);
+        }
+    }
+
+    // Guardar o actualizar administrador
+    public Administrador guardar(Administrador admin) {
+        if (admin.getCorreo() == null || admin.getCorreo().isEmpty()) {
+            throw new RuntimeException("Correo obligatorio");
         }
 
+        List<Administrador> admins = leerTodos();
+        
+        // Buscar si ya existe y actualizarlo
+        Optional<Administrador> existente = admins.stream()
+            .filter(a -> a.getCorreo().equals(admin.getCorreo()))
+            .findFirst();
+        
+        if (existente.isPresent()) {
+            admins.remove(existente.get());
+        }
+        
+        admins.add(admin);
+        guardarTodos(admins);
+        
+        System.out.println("Administrador guardado: " + admin.getCorreo());
         return admin;
     }
 
-    // 🔹 Buscar administrador por correo
+    // Buscar administrador por correo
     public Optional<Administrador> buscarPorEmail(String email) {
-        try {
-            File file = new File(carpetaAdmins + email + ".json");
-            if (!file.exists()) return Optional.empty();
-            Administrador admin = objectMapper.readValue(file, Administrador.class);
-            return Optional.of(admin);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
+        List<Administrador> admins = leerTodos();
+        return admins.stream()
+            .filter(a -> a.getCorreo().equals(email))
+            .findFirst();
     }
 
-    // 🔹 Eliminar administrador
+    // Eliminar administrador
     public void eliminar(String email) {
-        File file = new File(carpetaAdmins + email + ".json");
-        if (file.exists()) file.delete();
+        List<Administrador> admins = leerTodos();
+        admins.removeIf(a -> a.getCorreo().equals(email));
+        guardarTodos(admins);
+        System.out.println("Administrador eliminado: " + email);
     }
 
-    // 🔹 Listar todos los usuarios
+    // Listar todos los administradores
+    public List<Administrador> listarTodos() {
+        return leerTodos();
+    }
+
+    // Listar todos los usuarios (delega al UsuarioRepository)
     public List<Usuario> listarUsuarios() {
-        List<Usuario> lista = new ArrayList<>();
-        File carpeta = new File(carpetaUsuarios);
-        File[] archivos = carpeta.listFiles();
-
-        if (archivos != null) {
-            for (File f : archivos) {
-                try {
-                    Usuario u = objectMapper.readValue(f, Usuario.class);
-                    lista.add(u);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return lista;
+        return usuarioRepository.listarTodos();
     }
 
-    // 🔹 Cambiar rol de usuario
+    // Cambiar rol de usuario
     public Usuario cambiarRol(String email, String rol) {
-        try {
-            File file = new File(carpetaUsuarios + email + ".json");
-            if (!file.exists()) throw new RuntimeException("Usuario no encontrado");
-
-            Usuario u = objectMapper.readValue(file, Usuario.class);
-            u.setRol(Enum.valueOf(sistema_FitSIL.GestionUsuarios.model.Rol.class, rol));
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, u);
-            return u;
-        } catch (IOException e) {
-            throw new RuntimeException("Error al cambiar rol", e);
+        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorEmail(email);
+        
+        if (!usuarioOpt.isPresent()) {
+            throw new RuntimeException("Usuario no encontrado");
         }
+        
+        Usuario usuario = usuarioOpt.get();
+        usuario.setRol(Enum.valueOf(Rol.class, rol));
+        return usuarioRepository.guardar(usuario);
     }
 
-    // 🔹 Estadísticas globales
+    // Estadísticas globales
     public String estadisticas() {
-        List<Usuario> usuarios = listarUsuarios();
+        List<Usuario> usuarios = usuarioRepository.listarTodos();
         double totalPeso = usuarios.stream().mapToDouble(Usuario::getPeso).sum();
         double totalAltura = usuarios.stream().mapToDouble(Usuario::getAltura).sum();
         int totalUsuarios = usuarios.size();

@@ -1,0 +1,12 @@
+[ {
+  "id" : null,
+  "nombre" : "Isabel",
+  "apellido" : "Morocho",
+  "telefono" : "0988021071",
+  "correo" : "isabelkaty07@gmail.com",
+  "usuario" : "AdminIsaDev",
+  "contrasenia" : "$2a$10$APPGvlGWl1OIKN.irfMmtOQT6wdO9Q5OwjrIuXrqnTk6/LKafe046",
+  "rol" : "ADMINISTRADOR",
+  "departamento" : "Tecnología",
+  "codigoAdmin" : 110102
+} ]

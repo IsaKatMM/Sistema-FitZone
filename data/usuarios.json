@@ -1,0 +1,23 @@
+[ {
+  "id" : null,
+  "nombre" : "Prueba4",
+  "apellido" : "Apellido",
+  "telefono" : null,
+  "correo" : "prub3@example.com",
+  "usuario" : "pru3",
+  "contrasenia" : "$2a$10$GE8gdKxnFvQL2W04m4cdz.4zvWHxljajENyrQNVrBPRr/TgIDwaaO",
+  "rol" : "USUARIO",
+  "peso" : 50.0,
+  "altura" : 1.65
+}, {
+  "id" : null,
+  "nombre" : "Prueba5",
+  "apellido" : "Apellido",
+  "telefono" : null,
+  "correo" : "prub5@example.com",
+  "usuario" : "pru5",
+  "contrasenia" : "$2a$10$b.qpXjFP66nA689cJEC7/Od/5rqLgetkQMM.FVWJtQnWVJl1R7vCa",
+  "rol" : "USUARIO",
+  "peso" : 50.0,
+  "altura" : 1.65
+} ]
