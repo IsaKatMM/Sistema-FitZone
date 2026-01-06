@@ -5,7 +5,6 @@ import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.model.Rol;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.io.File;
@@ -19,9 +18,7 @@ public class AdministradorRepository {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String archivoAdmins = "../data/administradores.json";
-    
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final String archivoUsuarios = "../data/usuarios.json";
 
     public AdministradorRepository() {
         File carpeta = new File("../data");
@@ -41,6 +38,8 @@ public class AdministradorRepository {
         }
     }
 
+    // ========== MÉTODOS PARA ADMINISTRADORES ==========
+    
     // Leer todos los administradores del archivo
     private List<Administrador> leerTodos() {
         try {
@@ -76,14 +75,29 @@ public class AdministradorRepository {
             .findFirst();
         
         if (existente.isPresent()) {
+            // Mantener el ID existente al actualizar
+            admin.setId(existente.get().getId());
             admins.remove(existente.get());
+        } else {
+            // Asignar nuevo ID si es un administrador nuevo
+            Integer nuevoId = generarNuevoId(admins);
+            admin.setId(nuevoId);
         }
         
         admins.add(admin);
         guardarTodos(admins);
         
-        System.out.println("Administrador guardado: " + admin.getCorreo());
+        System.out.println("Administrador guardado: " + admin.getCorreo() + " con ID: " + admin.getId());
         return admin;
+    }
+
+    // Generar un nuevo ID basado en el máximo ID existente
+    private Integer generarNuevoId(List<Administrador> admins) {
+        return admins.stream()
+            .map(Administrador::getId)
+            .filter(id -> id != null)
+            .max(Integer::compareTo)
+            .orElse(0) + 1;
     }
 
     // Buscar administrador por correo
@@ -107,14 +121,44 @@ public class AdministradorRepository {
         return leerTodos();
     }
 
-    // Listar todos los usuarios (delega al UsuarioRepository)
+    // ========== MÉTODOS PARA GESTIONAR USUARIOS ==========
+    
+    // Leer todos los usuarios directamente del archivo JSON
+    private List<Usuario> leerTodosUsuarios() {
+        try {
+            File file = new File(archivoUsuarios);
+            if (!file.exists()) {
+                return new ArrayList<>();
+            }
+            return objectMapper.readValue(file, new TypeReference<List<Usuario>>() {});
+        } catch (IOException e) {
+            System.err.println("Error al leer usuarios: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    // Guardar todos los usuarios directamente en el archivo JSON
+    private void guardarTodosUsuarios(List<Usuario> usuarios) {
+        try {
+            File file = new File(archivoUsuarios);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(file, usuarios);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar usuarios", e);
+        }
+    }
+
+    // Listar todos los usuarios
     public List<Usuario> listarUsuarios() {
-        return usuarioRepository.listarTodos();
+        return leerTodosUsuarios();
     }
 
     // Cambiar rol de usuario
     public Usuario cambiarRol(String email, String rol) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.buscarPorEmail(email);
+        List<Usuario> usuarios = leerTodosUsuarios();
+        
+        Optional<Usuario> usuarioOpt = usuarios.stream()
+            .filter(u -> u.getCorreo().equals(email))
+            .findFirst();
         
         if (!usuarioOpt.isPresent()) {
             throw new RuntimeException("Usuario no encontrado");
@@ -122,12 +166,19 @@ public class AdministradorRepository {
         
         Usuario usuario = usuarioOpt.get();
         usuario.setRol(Enum.valueOf(Rol.class, rol));
-        return usuarioRepository.guardar(usuario);
+        
+        // Actualizar en la lista y guardar
+        usuarios.removeIf(u -> u.getCorreo().equals(email));
+        usuarios.add(usuario);
+        guardarTodosUsuarios(usuarios);
+        
+        System.out.println("Rol cambiado para usuario: " + email + " -> " + rol);
+        return usuario;
     }
 
     // Estadísticas globales
     public String estadisticas() {
-        List<Usuario> usuarios = usuarioRepository.listarTodos();
+        List<Usuario> usuarios = leerTodosUsuarios();
         double totalPeso = usuarios.stream().mapToDouble(Usuario::getPeso).sum();
         double totalAltura = usuarios.stream().mapToDouble(Usuario::getAltura).sum();
         int totalUsuarios = usuarios.size();

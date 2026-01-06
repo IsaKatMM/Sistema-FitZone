@@ -71,14 +71,29 @@ public class UsuarioRepository {
             .findFirst();
         
         if (existente.isPresent()) {
+            // Mantener el ID existente al actualizar
+            usuario.setId(existente.get().getId());
             usuarios.remove(existente.get());
+        } else {
+            // Asignar nuevo ID si es un usuario nuevo
+            Integer nuevoId = generarNuevoId(usuarios);
+            usuario.setId(nuevoId);
         }
         
         usuarios.add(usuario);
         guardarTodos(usuarios);
         
-        System.out.println("Usuario guardado: " + usuario.getCorreo());
+        System.out.println("Usuario guardado: " + usuario.getCorreo() + " con ID: " + usuario.getId());
         return usuario;
+    }
+
+    // Generar un nuevo ID basado en el máximo ID existente
+    private Integer generarNuevoId(List<Usuario> usuarios) {
+        return usuarios.stream()
+            .map(Usuario::getId)
+            .filter(id -> id != null)
+            .max(Integer::compareTo)
+            .orElse(0) + 1;
     }
 
     // Buscar por correo
