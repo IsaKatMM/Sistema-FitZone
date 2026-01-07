@@ -1,6 +1,7 @@
 package sistema_FitSIL.GestionUsuarios.config;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +18,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import sistema_FitSIL.GestionUsuarios.security.JwtAuthFilter;
-import sistema_FitSIL.GestionUsuarios.security.RoleFilter;
-import sistema_FitSIL.GestionUsuarios.service.MyUserDetailsService;
+import sistema_FitSIL.GestionUsuarios.service.JsonUserDetailsService;
 
 @Configuration
 @EnableMethodSecurity
@@ -29,10 +30,7 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     @Autowired
-    private RoleFilter roleFilter;
-
-    @Autowired
-    private MyUserDetailsService userDetailsService;
+    private JsonUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,15 +42,20 @@ public class SecurityConfig {
                     "/usuarios/registro",
                     "/usuarios/login",
                     "/auth/login",
-                    "/api/estadisticas/**", // ✅ todas las subrutas
-                    "/administradores/registro"
+                    "/administradores/registro",
+                    "/administradores/login"
                 ).permitAll()
+                
+                //endpoints de admin-requiere autenticacion
+                .requestMatchers("/administradores/**").authenticated()
+
+
                 .anyRequest().authenticated()
             )
-            // ✅ Orden correcto de filtros
-            .addFilterBefore(roleFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(jwtAuthFilter, RoleFilter.class)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
+import sistema_FitSIL.GestionUsuarios.model.Persona;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
 import sistema_FitSIL.GestionUsuarios.security.JwtService;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     @Autowired
@@ -42,7 +44,7 @@ public class AuthController {
         }
 
         // Buscar administrador en la base de datos MySQL
-        Optional<Administrador> adminOpt = adminRepo.findByCorreo(correo);
+        Optional<Administrador> adminOpt = adminRepo.buscarPorEmail(correo);
         if (adminOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Usuario no encontrado"));

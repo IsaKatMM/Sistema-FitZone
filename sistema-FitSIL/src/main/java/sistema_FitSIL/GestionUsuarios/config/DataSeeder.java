@@ -1,5 +1,3 @@
-package sistema_FitSIL.GestionUsuarios.config;
-
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +18,7 @@ public class DataSeeder {
     @PostConstruct
     public void init() {
         // Solo crea el admin si la tabla está vacía
-        if (adminRepository.count() == 0) {
+        if (adminRepository.listarTodos().size() == 0) {
             Administrador admin = new Administrador();
             admin.setNombre("Super Admin");
             admin.setCorreo("admin@fitsil.com");
@@ -30,7 +28,7 @@ public class DataSeeder {
             admin.setContrasenia(passwordEncoder.encode("Admin123"));
             admin.setRol(Rol.ADMINISTRADOR);
 
-            adminRepository.save(admin);
+            adminRepository.guardar(admin);
 
             System.out.println("✅ Administrador inicial creado:");
             System.out.println("   Usuario: admin@fitsil.com");

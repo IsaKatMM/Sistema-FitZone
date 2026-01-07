@@ -31,7 +31,7 @@ public class RutinaSemanalService {
                                                    Double peso) {
         
         // Buscar usuario
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+        Usuario usuario = usuarioRepository.buscarPorEmail(correoUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         // Buscar ejercicio
@@ -102,7 +102,7 @@ public class RutinaSemanalService {
     // Eliminar todas las rutinas de un usuario
     @Transactional
     public void eliminarTodasLasRutinas(String correoUsuario) {
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+        Usuario usuario = usuarioRepository.buscarPorEmail(correoUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         rutinaRepository.deleteByUsuarioId(usuario.getId());
@@ -110,7 +110,7 @@ public class RutinaSemanalService {
 
     // Obtener rutinas completadas
     public List<RutinaSemanal> obtenerRutinasCompletadas(String correoUsuario) {
-        Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+        Usuario usuario = usuarioRepository.buscarPorEmail(correoUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
         return rutinaRepository.findByUsuarioIdAndCompletado(usuario.getId(), true);

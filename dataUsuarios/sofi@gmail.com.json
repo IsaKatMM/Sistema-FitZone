@@ -1,0 +1,12 @@
+{
+  "id" : null,
+  "nombre" : "Sofia",
+  "apellido" : "Morocho",
+  "telefono" : "098753641",
+  "correo" : "sofi@gmail.com",
+  "usuario" : "sof123",
+  "contrasenia" : "$2a$10$UInOvlbzrDFTZfUUYkgyEenEMRq4MaZd7Ub3wnodw3c7myicVDO7C",
+  "rol" : "USUARIO",
+  "peso" : 65.0,
+  "altura" : 1.64
+}
