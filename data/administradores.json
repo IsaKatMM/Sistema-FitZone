@@ -1,0 +1,34 @@
+[ {
+  "id" : 1,
+  "nombre" : "Isabel",
+  "apellido" : "Morocho",
+  "telefono" : "0988021071",
+  "correo" : "isabelkaty07@gmail.com",
+  "usuario" : "AdminIsaDev",
+  "contrasenia" : "$2a$10$APPGvlGWl1OIKN.irfMmtOQT6wdO9Q5OwjrIuXrqnTk6/LKafe046",
+  "rol" : "ADMINISTRADOR",
+  "departamento" : "Tecnología",
+  "codigoAdmin" : 110102
+}, {
+  "id" : 2,
+  "nombre" : "Juan",
+  "apellido" : "Pérez",
+  "telefono" : "+593987654321",
+  "correo" : "juan.perez@fitsil.com",
+  "usuario" : "juanp_admin",
+  "contrasenia" : "$2a$10$6GkoT52uA6S3nL.V6hhOfOOEylA3re2nvwJeqEuAMdioPQFcQ1mjK",
+  "rol" : "ADMINISTRADOR",
+  "departamento" : "Tecnología",
+  "codigoAdmin" : 1001
+}, {
+  "id" : 3,
+  "nombre" : "Katherine Isabel",
+  "apellido" : "Marizaca Maza",
+  "telefono" : "0993420275",
+  "correo" : "isabel.morocho@gmail.com",
+  "usuario" : "isAdmin123",
+  "contrasenia" : "$2a$10$JNIR1NzMcVPqVykuvHjz.ekq0ifQDF3C0WGmLKeSW6Fs1p2oADrAu",
+  "rol" : "ADMINISTRADOR",
+  "departamento" : "Sistemas",
+  "codigoAdmin" : 1004
+} ]

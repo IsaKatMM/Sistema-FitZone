@@ -1,6 +1,7 @@
 package sistema_FitSIL.GestionUsuarios.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
@@ -8,6 +9,7 @@ import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
 import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdministradorService {
@@ -17,13 +19,35 @@ public class AdministradorService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+ 
 
-    public Administrador registrarAdmin(Administrador admin) {
-        return adminRepository.save(admin);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    // 🆕 Login de administrador
+    public Optional<Administrador> login(String correo, String contrasenia) {
+        Optional<Administrador> adminOpt = adminRepository.buscarPorEmail(correo);
+        
+        if (adminOpt.isPresent()) {
+            Administrador admin = adminOpt.get();
+            // Verificar contraseña encriptada
+            if (passwordEncoder.matches(contrasenia, admin.getContrasenia())) {
+                return Optional.of(admin);
+            }
+        }
+        
+        return Optional.empty();
     }
 
+    // Crear administrador
+    public Administrador registrarAdmin(Administrador admin) {
+        return adminRepository.guardar(admin);
+    }
+
+    // Actualizar administrador
     public Administrador actualizarAdmin(String email, Administrador datos) {
-        Administrador existente = adminRepository.findByCorreo(email)
+        Administrador existente = adminRepository.buscarPorEmail(email)
                 .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
 
         if (datos.getNombre() != null) existente.setNombre(datos.getNombre());
@@ -31,39 +55,40 @@ public class AdministradorService {
         if (datos.getCodigoAdmin() != 0) existente.setCodigoAdmin(datos.getCodigoAdmin());
         if (datos.getContrasenia() != null) existente.setContrasenia(datos.getContrasenia());
 
-        return adminRepository.save(existente);
+        return adminRepository.guardar(existente);
     }
 
+    // Eliminar administrador
     public void eliminarAdmin(String email) {
-        Administrador admin = adminRepository.findByCorreo(email)
-                .orElseThrow(() -> new RuntimeException("Administrador no encontrado: " + email));
-        adminRepository.delete(admin);
+        if (adminRepository.buscarPorEmail(email).isPresent()) {
+            adminRepository.eliminar(email);
+        } else {
+            throw new RuntimeException("Administrador no encontrado: " + email);
+        }
     }
 
-    // ✅ Delegar usuarios al repo correspondiente
+    // Gestionar usuarios
     public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
+        return adminRepository.listarUsuarios();
     }
 
-    public Usuario cambiarRol(String correo, String rol) {
-        Usuario u = usuarioRepository.findByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        u.setRol(Enum.valueOf(sistema_FitSIL.GestionUsuarios.model.Rol.class, rol));
-        return usuarioRepository.save(u);
+    // Cambiar rol de usuario
+    public Usuario cambiarRol(String email, String rol) {
+        return adminRepository.cambiarRol(email, rol);
     }
 
+    // Consultar estadísticas globales
     public String estadisticas() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        double totalPeso = usuarios.stream().mapToDouble(Usuario::getPeso).sum();
-        double totalAltura = usuarios.stream().mapToDouble(Usuario::getAltura).sum();
-        int totalUsuarios = usuarios.size();
-
-        double promedioPeso = totalUsuarios > 0 ? totalPeso / totalUsuarios : 0;
-        double promedioAltura = totalUsuarios > 0 ? totalAltura / totalUsuarios : 0;
-
-        return String.format(
-                "{\"totalUsuarios\":%d,\"promedioPeso\":%.2f,\"promedioAltura\":%.2f}",
-                totalUsuarios, promedioPeso, promedioAltura
-        );
+        return adminRepository.estadisticas();
     }
+
+     // 🆕 Eliminar usuario
+    public void eliminarUsuario(String email) {
+        Usuario usuario = usuarioRepository.buscarPorEmail(email) // 👈 USAR buscarPorEmail()
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+        
+        usuarioRepository.eliminar(email); // 👈 USAR eliminar() en lugar de delete()
+        System.out.println("✅ Usuario eliminado: " + email);
+    }
+    
 }

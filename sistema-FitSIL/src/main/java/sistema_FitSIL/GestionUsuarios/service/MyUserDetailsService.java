@@ -33,7 +33,7 @@ public class MyUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
 
         // Primero buscamos en administradores
-        Optional<Administrador> adminOpt = adminRepo.findByCorreo(correo);
+        Optional<Administrador> adminOpt = adminRepo.buscarPorEmail(correo);
         if (adminOpt.isPresent()) {
             Administrador admin = adminOpt.get();
             return User.builder()
@@ -44,7 +44,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
 
         // Luego buscamos en usuarios normales
-        Optional<Usuario> userOpt = usuarioRepo.findByCorreo(correo);
+        Optional<Usuario> userOpt = usuarioRepo.buscarPorEmail(correo);
         if (userOpt.isPresent()) {
             Usuario user = userOpt.get();
             return User.builder()

@@ -7,18 +7,46 @@ import org.springframework.web.bind.annotation.*;
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.service.AdministradorService;
+import sistema_FitSIL.GestionUsuarios.security.JwtService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/administradores")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AdministradorController {
 
     @Autowired
     private AdministradorService adminService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // ← inyectamos el encoder
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private JwtService jwtService;
+
+    // 🆕 Login de administrador
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@RequestBody Administrador admin) {
+        Optional<Administrador> logeado = adminService.login(admin.getCorreo(), admin.getContrasenia());
+        
+        if (logeado.isPresent()) {
+            Administrador a = logeado.get();
+            String token = jwtService.generarToken(a.getCorreo(), a.getRol().toString());
+            
+            Map<String, Object> respuesta = new HashMap<>();
+            respuesta.put("usuario", a); // Usamos "usuario" para mantener compatibilidad con el frontend
+            respuesta.put("token", token);
+            
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
+    }
+    
     // Crear administrador
     @PostMapping("/registro")
     public ResponseEntity<Administrador> registrar(@RequestBody Administrador admin) {
@@ -59,5 +87,17 @@ public class AdministradorController {
     @GetMapping("/usuarios/estadisticas")
     public ResponseEntity<String> estadisticas() {
         return ResponseEntity.ok(adminService.estadisticas());
+    }
+
+
+
+    @DeleteMapping("/usuarios/")
+public ResponseEntity<String> eliminarUsuario(@RequestParam String email) {
+    try {
+        adminService.eliminarUsuario(email);
+        return ResponseEntity.ok("Usuario eliminado: " + email);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(404).body(e.getMessage());
+    }
     }
 }

@@ -81,8 +81,8 @@ public class Persona {
         return this.id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setId(Integer nuevoId) {
+        this.id = nuevoId;
     }
 
     public String getNombre() {
