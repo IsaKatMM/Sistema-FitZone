@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 
 @Entity
 public class Ejercicio {
-    // Atributos del ejercicio
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -15,43 +15,32 @@ public class Ejercicio {
     private String descripcion;
     private String musculoTrabajado;
 
-    // Construcctor vacío
-    public Ejercicio() {
-    }
+    // Nueva propiedad para guardar la ruta de la imagen
+    private String imagenUrl;
 
+    public Ejercicio() { }
 
-    // Constructor
-    public Ejercicio(int id, String nombre, String descripcion, String musculoTrabajado) {
+    public Ejercicio(int id, String nombre, String descripcion, String musculoTrabajado, String imagenUrl) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.musculoTrabajado = musculoTrabajado;
+        this.imagenUrl = imagenUrl;
     }
 
     // Getters y Setters
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
-    }
-    public String getNombre() {
-        return nombre;
-    }
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-    public String getDescripcion() {
-        return descripcion;
-    }
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-    public String getMusculoTrabajado() {
-        return musculoTrabajado;
-    }
-    public void setMusculoTrabajado(String musculoTrabajado) {
-        this.musculoTrabajado = musculoTrabajado;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+    public String getMusculoTrabajado() { return musculoTrabajado; }
+    public void setMusculoTrabajado(String musculoTrabajado) { this.musculoTrabajado = musculoTrabajado; }
+
+    public String getImagenUrl() { return imagenUrl; }
+    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
 }
