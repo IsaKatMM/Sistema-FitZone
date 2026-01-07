@@ -88,4 +88,16 @@ public class AdministradorController {
     public ResponseEntity<String> estadisticas() {
         return ResponseEntity.ok(adminService.estadisticas());
     }
+
+
+
+    @DeleteMapping("/usuarios/")
+public ResponseEntity<String> eliminarUsuario(@RequestParam String email) {
+    try {
+        adminService.eliminarUsuario(email);
+        return ResponseEntity.ok("Usuario eliminado: " + email);
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(404).body(e.getMessage());
+    }
+    }
 }

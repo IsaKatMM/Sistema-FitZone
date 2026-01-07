@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
+import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,9 @@ public class AdministradorService {
     @Autowired
     private AdministradorRepository adminRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    
  
 
     @Autowired
@@ -77,4 +81,14 @@ public class AdministradorService {
     public String estadisticas() {
         return adminRepository.estadisticas();
     }
+
+     // 🆕 Eliminar usuario
+    public void eliminarUsuario(String email) {
+        Usuario usuario = usuarioRepository.buscarPorEmail(email) // 👈 USAR buscarPorEmail()
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
+        
+        usuarioRepository.eliminar(email); // 👈 USAR eliminar() en lugar de delete()
+        System.out.println("✅ Usuario eliminado: " + email);
+    }
+    
 }

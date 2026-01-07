@@ -45,6 +45,11 @@ public class SecurityConfig {
                     "/administradores/registro",
                     "/administradores/login"
                 ).permitAll()
+                
+                //endpoints de admin-requiere autenticacion
+                .requestMatchers("/administradores/**").authenticated()
+
+
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 

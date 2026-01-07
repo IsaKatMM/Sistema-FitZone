@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
+import adminService from '../../services/adminService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -9,6 +10,19 @@ const AdminDashboard = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
+  
+  // Estados para gestión de usuarios
+  const [usuarios, setUsuarios] = useState([]);
+  const [usuariosFiltrados, setUsuariosFiltrados] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [estadisticas, setEstadisticas] = useState({
+    totalUsuarios: 0,
+    promedioPeso: 0,
+    promedioAltura: 0
+  });
+  const [loading, setLoading] = useState(false);
+  const [usuariosActivos, setUsuariosActivos] = useState(0);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +35,9 @@ const AdminDashboard = () => {
     if (savedTheme) {
       setDarkMode(savedTheme === 'dark');
     }
+
+    // Cargar datos iniciales
+    cargarDatos();
   }, []);
 
   useEffect(() => {
@@ -33,6 +50,63 @@ const AdminDashboard = () => {
     }
   }, [darkMode]);
 
+  // Cargar usuarios y estadísticas
+  const cargarDatos = async () => {
+    setLoading(true);
+    try {
+      console.log('📡 Cargando datos del administrador...');
+      
+      // Intentar cargar usuarios
+      let usuariosData = [];
+      try {
+        usuariosData = await adminService.listarUsuarios();
+        console.log('✅ Usuarios cargados:', usuariosData.length);
+      } catch (error) {
+        console.error('⚠️ Error al cargar usuarios:', error.response?.status);
+        if (error.response?.status === 404) {
+          console.log('ℹ️ Endpoint de usuarios no encontrado. Verifica el controller.');
+        }
+      }
+      
+      // Intentar cargar estadísticas
+      let statsData = { totalUsuarios: 0, promedioPeso: 0, promedioAltura: 0 };
+      try {
+        statsData = await adminService.obtenerEstadisticas();
+        console.log('✅ Estadísticas cargadas:', statsData);
+      } catch (error) {
+        console.error('⚠️ Error al cargar estadísticas:', error.response?.status);
+        // Calcular estadísticas manualmente si el endpoint falla
+        if (usuariosData.length > 0) {
+          const totalPeso = usuariosData.reduce((sum, u) => sum + (u.peso || 0), 0);
+          const totalAltura = usuariosData.reduce((sum, u) => sum + (u.altura || 0), 0);
+          statsData = {
+            totalUsuarios: usuariosData.length,
+            promedioPeso: usuariosData.length > 0 ? totalPeso / usuariosData.length : 0,
+            promedioAltura: usuariosData.length > 0 ? totalAltura / usuariosData.length : 0
+          };
+          console.log('✅ Estadísticas calculadas localmente:', statsData);
+        }
+      }
+      
+      setUsuarios(usuariosData);
+      setUsuariosFiltrados(usuariosData);
+      setEstadisticas(statsData);
+      setUsuariosActivos(adminService.calcularUsuariosActivos(usuariosData));
+      
+    } catch (error) {
+      console.error('❌ Error general al cargar datos:', error);
+      alert('Error al cargar los datos del sistema. Revisa la consola para más detalles.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Buscar usuarios
+  useEffect(() => {
+    const resultados = adminService.buscarUsuarios(usuarios, searchTerm);
+    setUsuariosFiltrados(resultados);
+  }, [searchTerm, usuarios]);
+
   const toggleTheme = () => {
     setDarkMode(!darkMode);
   };
@@ -40,6 +114,28 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
       authService.logout();
+    }
+  };
+
+  const handleEliminarUsuario = async (email) => {
+    if (window.confirm(`¿Estás seguro de eliminar al usuario ${email}?`)) {
+      try {
+        await adminService.eliminarUsuario(email);
+        alert('Usuario eliminado exitosamente');
+        cargarDatos(); // Recargar datos
+      } catch (error) {
+        alert('Error al eliminar usuario');
+      }
+    }
+  };
+
+  const handleCambiarRol = async (email, nuevoRol) => {
+    try {
+      await adminService.cambiarRol(email, nuevoRol);
+      alert('Rol actualizado exitosamente');
+      cargarDatos(); // Recargar datos
+    } catch (error) {
+      alert('Error al cambiar rol');
     }
   };
 
@@ -215,22 +311,22 @@ const AdminDashboard = () => {
           <section className="stats-section">
             <div className="stat-card-admin">
               <p className="stat-label-admin">Total Usuarios</p>
-              <p className="stat-value-admin">0</p>
+              <p className="stat-value-admin">{estadisticas.totalUsuarios}</p>
             </div>
             
             <div className="stat-card-admin">
               <p className="stat-label-admin">Activos Hoy</p>
-              <p className="stat-value-admin">0</p>
+              <p className="stat-value-admin">{usuariosActivos}</p>
             </div>
             
             <div className="stat-card-admin">
-              <p className="stat-label-admin">Rutinas Creadas</p>
-              <p className="stat-value-admin">0</p>
+              <p className="stat-label-admin">Peso Promedio</p>
+              <p className="stat-value-admin">{estadisticas.promedioPeso.toFixed(1)} kg</p>
             </div>
             
             <div className="stat-card-admin">
-              <p className="stat-label-admin">Total Ejercicios</p>
-              <p className="stat-value-admin">0</p>
+              <p className="stat-label-admin">Altura Promedio</p>
+              <p className="stat-value-admin">{estadisticas.promedioAltura.toFixed(2)} m</p>
             </div>
           </section>
 
@@ -240,13 +336,9 @@ const AdminDashboard = () => {
               <div className="section-header">
                 <h2 className="section-title-main">Gestión de Usuarios</h2>
                 <div className="section-actions">
-                  <button className="btn-secondary-admin">
-                    <span className="material-icons">upload</span>
-                    Exportar
-                  </button>
-                  <button className="btn-primary-admin">
-                    <span className="material-icons">add</span>
-                    Agregar Usuario
+                  <button className="btn-secondary-admin" onClick={cargarDatos}>
+                    <span className="material-icons">refresh</span>
+                    Actualizar
                   </button>
                 </div>
               </div>
@@ -255,17 +347,78 @@ const AdminDashboard = () => {
                 <span className="material-icons search-icon">search</span>
                 <input 
                   type="text" 
-                  placeholder="Buscar usuarios..."
+                  placeholder="Buscar por nombre, correo o usuario..."
                   className="search-input"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
               <div className="table-container">
-                <div className="empty-state-admin">
-                  <span className="material-icons empty-icon">group</span>
-                  <p>No hay usuarios registrados</p>
-                  <p className="empty-subtitle">Los usuarios aparecerán aquí</p>
-                </div>
+                {loading ? (
+                  <div className="loading-state">Cargando usuarios...</div>
+                ) : usuariosFiltrados.length === 0 ? (
+                  <div className="empty-state-admin">
+                    <span className="material-icons empty-icon">group</span>
+                    <p>{searchTerm ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}</p>
+                    <p className="empty-subtitle">
+                      {searchTerm ? 'Intenta con otro término de búsqueda' : 'Los usuarios aparecerán aquí'}
+                    </p>
+                  </div>
+                ) : (
+                  <table className="users-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Peso</th>
+                        <th>Altura</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usuariosFiltrados.map((usuario) => (
+                        <tr key={usuario.id}>
+                          <td>{usuario.id}</td>
+                          <td>{usuario.nombre} {usuario.apellido}</td>
+                          <td>@{usuario.usuario}</td>
+                          <td>{usuario.correo}</td>
+                          <td>{usuario.peso} kg</td>
+                          <td>{usuario.altura} m</td>
+                          <td>
+                            <span className={`badge badge-${usuario.rol?.toLowerCase()}`}>
+                              {usuario.rol}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <button 
+                                className="btn-action edit"
+                                title="Cambiar rol"
+                                onClick={() => {
+                                  const nuevoRol = usuario.rol === 'USUARIO' ? 'ENTRENADOR' : 'USUARIO';
+                                  handleCambiarRol(usuario.correo, nuevoRol);
+                                }}
+                              >
+                                <span className="material-icons">swap_horiz</span>
+                              </button>
+                              <button 
+                                className="btn-action delete"
+                                title="Eliminar"
+                                onClick={() => handleEliminarUsuario(usuario.correo)}
+                              >
+                                <span className="material-icons">delete</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </section>
           )}
@@ -300,13 +453,25 @@ const AdminDashboard = () => {
           {/* Analytics */}
           {activeSection === 'analytics' && (
             <section className="management-section">
-              <h2 className="section-title-main">Usuarios Activos (Últimos 30 Días)</h2>
+              <h2 className="section-title-main">Estadísticas del Sistema</h2>
               
-              <div className="chart-container">
-                <div className="empty-state-admin">
-                  <span className="material-icons empty-icon">analytics</span>
-                  <p>Estadísticas no disponibles</p>
-                  <p className="empty-subtitle">Los datos aparecerán cuando haya actividad</p>
+              <div className="stats-grid">
+                <div className="stat-card-large">
+                  <h3>Usuarios Registrados</h3>
+                  <p className="stat-large-value">{estadisticas.totalUsuarios}</p>
+                  <p className="stat-subtitle">Total de usuarios en el sistema</p>
+                </div>
+
+                <div className="stat-card-large">
+                  <h3>Promedio de Peso</h3>
+                  <p className="stat-large-value">{estadisticas.promedioPeso.toFixed(2)} kg</p>
+                  <p className="stat-subtitle">Entre todos los usuarios</p>
+                </div>
+
+                <div className="stat-card-large">
+                  <h3>Promedio de Altura</h3>
+                  <p className="stat-large-value">{estadisticas.promedioAltura.toFixed(2)} m</p>
+                  <p className="stat-subtitle">Entre todos los usuarios</p>
                 </div>
               </div>
             </section>
@@ -325,6 +490,7 @@ const AdminDashboard = () => {
                     <div className="dashboard-card-content">
                       <h3>Usuarios</h3>
                       <p>Gestionar usuarios del sistema</p>
+                      <p className="card-stat">{estadisticas.totalUsuarios} registrados</p>
                       <button onClick={() => setActiveSection('users')} className="card-action-btn">
                         Ver más →
                       </button>
@@ -338,6 +504,7 @@ const AdminDashboard = () => {
                     <div className="dashboard-card-content">
                       <h3>Ejercicios</h3>
                       <p>Biblioteca de ejercicios</p>
+                      <p className="card-stat">0 ejercicios</p>
                       <button onClick={() => setActiveSection('exercises')} className="card-action-btn">
                         Ver más →
                       </button>
@@ -351,6 +518,7 @@ const AdminDashboard = () => {
                     <div className="dashboard-card-content">
                       <h3>Reportes</h3>
                       <p>Estadísticas y análisis</p>
+                      <p className="card-stat">{usuariosActivos} activos hoy</p>
                       <button onClick={() => setActiveSection('analytics')} className="card-action-btn">
                         Ver más →
                       </button>
