@@ -8,7 +8,12 @@ export default function GraficoLinea({ rango }) {
     "ALL": [78, 76, 74, 72, 71, 70.5, 70],
   };
 
-  const data = pesos[rango];
+  const data = pesos[rango] ?? [];
+
+  if (data.length === 0) {
+    return <div className="grafico-card">Sin datos</div>;
+  }
+
   const ultimoPeso = data[data.length - 1];
 
   const puntos = data

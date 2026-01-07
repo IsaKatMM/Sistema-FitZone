@@ -9,7 +9,11 @@ export default function GraficoBarras({ rango }) {
   };
 
   const dias = ["L", "M", "M", "J", "V", "S", "D"];
-  const valores = datos[rango];
+  const valores = datos[rango] ?? [];
+
+  if (valores.length === 0) {
+    return <div className="grafico-card">Sin datos</div>;
+  }
 
   return (
     <div className="grafico-card">

@@ -1,10 +1,12 @@
 package sistema_FitSIL.EstadisticaReporte.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import sistema_FitSIL.EstadisticaReporte.dto.ResumenDTO;
 import sistema_FitSIL.EstadisticaReporte.model.Estadistica;
 import sistema_FitSIL.EstadisticaReporte.service.EstadisticaService;
-import sistema_FitSIL.GestionUsuarios.service.UsuarioService;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
+import sistema_FitSIL.GestionUsuarios.service.UsuarioService;
 
 import java.util.List;
 
@@ -15,37 +17,49 @@ public class EstadisticaController {
     private final EstadisticaService service;
     private final UsuarioService usuarioService;
 
-    public EstadisticaController(EstadisticaService service, UsuarioService usuarioService) {
+    public EstadisticaController(
+            EstadisticaService service,
+            UsuarioService usuarioService
+    ) {
         this.service = service;
         this.usuarioService = usuarioService;
     }
 
-    @GetMapping
-    public List<Estadistica> listar() {
-        return service.listar();
-    }
-
-    // 🔹 Genera automáticamente estadísticas para el usuario
-    @PostMapping("/generar")
-    public Estadistica generarEstadistica(@RequestParam String email, @RequestParam int minutos) {
-        Usuario usuario = usuarioService.obtenerPerfil(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        return service.generarEstadisticaAutomatica(usuario, minutos);
-    }
-
-    @GetMapping("/usuario/{email}")
-    public List<Estadistica> buscarPorUsuario(@PathVariable String email) {
-        Usuario usuario = usuarioService.obtenerPerfil(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    // 🔹 Todas las estadísticas del usuario autenticado
+    @GetMapping("/usuario")
+    public List<Estadistica> estadisticasUsuario(Authentication auth) {
+        String email = auth.getName();
+        Usuario usuario = usuarioService.obtenerPerfil(email).orElseThrow();
         return service.buscarPorUsuario(usuario);
     }
 
-    @GetMapping("/promedio-estres/{email}")
-    public double promedioEstres(@PathVariable String email) {
-        Usuario usuario = usuarioService.obtenerPerfil(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    // 🔹 Resumen por rango
+    @GetMapping("/usuario/resumen")
+    public ResumenDTO resumen(
+            @RequestParam String rango,
+            Authentication auth
+    ) {
+        String email = auth.getName();
+        Usuario usuario = usuarioService.obtenerPerfil(email).orElseThrow();
+        return service.obtenerResumen(usuario, rango);
+    }
+
+    // 🔹 Promedio de estrés
+    @GetMapping("/usuario/promedio-estres")
+    public double promedioEstres(Authentication auth) {
+        String email = auth.getName();
+        Usuario usuario = usuarioService.obtenerPerfil(email).orElseThrow();
         return service.promedioEstres(usuario);
     }
+
+    // 🔹 Generar estadística automática (test)
+    @PostMapping("/generar")
+    public Estadistica generar(
+            @RequestParam int minutos,
+            Authentication auth
+    ) {
+        String email = auth.getName();
+        Usuario usuario = usuarioService.obtenerPerfil(email).orElseThrow();
+        return service.generarEstadisticaAutomatica(usuario, minutos);
+    }
 }
-
-

@@ -11,24 +11,50 @@ import Reportes from "../Componentes/Reportes";
 export default function FitEstadisticas() {
   const [rango, setRango] = useState("1M");
 
-  // Datos simulados (luego vienen del backend)
+  // 🔒 Estado inicial BLINDADO
   const [resumen, setResumen] = useState({
-    entrenamientos: 28,
-    duracionPromedio: 45,
-    calorias: 12450,
+    entrenamientos: 0,
+    duracionPromedio: 0,
+    calorias: 0,
   });
 
   useEffect(() => {
-    // Aquí luego irá la llamada real al backend
-    if (rango === "7D") {
-      setResumen({ entrenamientos: 6, duracionPromedio: 42, calorias: 3200 });
-    } else if (rango === "1M") {
-      setResumen({ entrenamientos: 28, duracionPromedio: 45, calorias: 12450 });
-    } else if (rango === "6M") {
-      setResumen({ entrenamientos: 120, duracionPromedio: 50, calorias: 54000 });
-    } else {
-      setResumen({ entrenamientos: 200, duracionPromedio: 48, calorias: 80000 });
+    let nuevoResumen;
+
+    switch (rango) {
+      case "7D":
+        nuevoResumen = {
+          entrenamientos: 6,
+          duracionPromedio: 42,
+          calorias: 3200,
+        };
+        break;
+
+      case "1M":
+        nuevoResumen = {
+          entrenamientos: 28,
+          duracionPromedio: 45,
+          calorias: 12450,
+        };
+        break;
+
+      case "6M":
+        nuevoResumen = {
+          entrenamientos: 120,
+          duracionPromedio: 50,
+          calorias: 54000,
+        };
+        break;
+
+      default:
+        nuevoResumen = {
+          entrenamientos: 200,
+          duracionPromedio: 48,
+          calorias: 80000,
+        };
     }
+
+    setResumen(nuevoResumen);
   }, [rango]);
 
   return (
@@ -40,13 +66,15 @@ export default function FitEstadisticas() {
           titulo="Entrenamientos totales"
           valor={resumen.entrenamientos}
         />
+
         <EstadisticaCard
           titulo="Duración promedio"
           valor={`${resumen.duracionPromedio} min`}
         />
+
         <EstadisticaCard
           titulo="Calorías quemadas"
-          valor={resumen.calorias.toLocaleString()}
+          valor={(resumen.calorias ?? 0).toLocaleString()}
         />
       </div>
 

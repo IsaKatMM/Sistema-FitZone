@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/estadisticas';
+const API_URL = 'http://localhost:8081/api/estadisticas';
 
 // Obtener el token del localStorage
 const getAuthHeader = () => {
