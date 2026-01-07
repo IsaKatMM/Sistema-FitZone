@@ -1,19 +1,42 @@
+/* Componentes/EstadisticaCard.css */
+
 .stat-card {
   background: #0f172a;
   color: white;
   padding: 1.5rem;
-  border-radius: 16px;
+  border-radius: 1rem;
   flex: 1;
   min-width: 220px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.page.dark .stat-card {
+  background: #1e293b;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.page.dark .stat-card:hover {
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
 }
 
 .stat-title {
   color: #94a3b8;
   font-size: 0.9rem;
+  margin-bottom: 0.5rem;
 }
 
 .stat-value {
   color: #f97316;
   font-size: 1.8rem;
   font-weight: bold;
+}
+
+.page.dark .stat-value {
+  color: #3b82f6;
 }

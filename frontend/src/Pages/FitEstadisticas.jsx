@@ -1,4 +1,6 @@
+// src/Pages/FitEstadisticas.jsx
 import { useEffect, useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 import "./FitEstadisticas.css";
 
 import EstadisticaCard from "../Componentes/EstadisticaCard";
@@ -9,9 +11,9 @@ import ActividadReciente from "../Componentes/ActividadReciente";
 import Reportes from "../Componentes/Reportes";
 
 export default function FitEstadisticas() {
+  const { darkMode } = useTheme();
   const [rango, setRango] = useState("1M");
 
-  // 🔒 Estado inicial BLINDADO
   const [resumen, setResumen] = useState({
     entrenamientos: 0,
     duracionPromedio: 0,
@@ -58,7 +60,7 @@ export default function FitEstadisticas() {
   }, [rango]);
 
   return (
-    <div className="page">
+    <div className={`page ${darkMode ? 'dark' : ''}`}>
       <h1 className="titulo">Estadísticas y Reportes</h1>
 
       <div className="stats">

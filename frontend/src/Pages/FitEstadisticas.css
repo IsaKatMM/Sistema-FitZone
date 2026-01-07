@@ -1,14 +1,34 @@
+/* Pages/FitEstadisticas.css */
+
+.page {
+  padding: 2rem;
+  min-height: calc(100vh - 70px);
+  background: #ffffff;
+  transition: background 0.3s ease;
+}
+
+.page.dark {
+  background: transparent;
+}
+
 .page h1 {
   text-align: center;
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 2rem;
+  color: #0f172a;
+  transition: color 0.3s ease;
+}
+
+.page.dark h1 {
+  color: #ffffff;
 }
 
 .stats {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .graficos {
@@ -22,4 +42,31 @@
   margin: 2.5rem 0 1rem;
   font-size: 1.4rem;
   font-weight: 700;
+  color: #0f172a;
+  transition: color 0.3s ease;
+}
+
+.page.dark h2 {
+  color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .graficos {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .page h1 {
+    font-size: 1.5rem;
+  }
 }

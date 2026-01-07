@@ -1,4 +1,15 @@
 import "./ActividadReciente.css";
+import { useTheme } from '../context/ThemeContext';
+
+function MiComponente() {
+  const { darkMode } = useTheme();
+  
+  return (
+    <div className={`mi-componente ${darkMode ? 'dark' : ''}`}>
+      {/* contenido */}
+    </div>
+  );
+}
 
 const actividades = [
   { nombre: "Fuerza cuerpo completo", fecha: "2023-10-26", valor: "45 min" },

@@ -1,14 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-<<<<<<< HEAD
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-})
-=======
-export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      include: /src\/.*\.[jt]sx?$/,
+    })
+  ],
+  esbuild: {
+    loader: 'jsx',
+    include: /src\/.*\.jsx?$/,
+    exclude: []
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+        '.jsx': 'jsx'
+      }
+    }
+  },
   server: {
     port: 5173,
     proxy: {
@@ -19,4 +31,3 @@ export default defineConfig({
     }
   }
 })
->>>>>>> 222abe1ab82d37b06aec08d82b6ceb1456416dc5

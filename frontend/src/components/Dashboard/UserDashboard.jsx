@@ -1,6 +1,7 @@
 // src/components/Dashboard/UserDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../context/ThemeContext";
 import authService from "../../services/authService";
 import "./UserDashboard.css";
 
@@ -9,6 +10,7 @@ import estadisticasImg from "../../assets/images/estadisticas.png";
 import nutricionImg from "../../assets/images/nutricion.png";
 
 const UserDashboard = () => {
+  const { darkMode } = useTheme(); // ✅ Usar tema global
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,8 +22,6 @@ const UserDashboard = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [showMenu, setShowMenu] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,33 +36,7 @@ const UserDashboard = () => {
         altura: currentUser.altura || "",
       });
     }
-
-    // Cargar preferencia de tema
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setDarkMode(savedTheme === "dark");
-    }
   }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
-
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-  };
-
-  const handleLogout = () => {
-    if (window.confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-      authService.logout();
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({
@@ -153,22 +127,13 @@ const UserDashboard = () => {
 
   return (
     <div className={`user-dashboard-modern ${darkMode ? "dark" : ""}`}>
-      {/* Header con perfil */}
+      {/* Header sin botón de tema (ahora está en navbar) */}
       <div className="dashboard-header-user">
         <div className="header-info">
           <p className="welcome-text">Bienvenido de nuevo,</p>
           <h2 className="user-name">{user.nombre}</h2>
         </div>
         <div className="header-actions">
-          {/* Botón de cambio de tema */}
-          <button
-            onClick={toggleTheme}
-            className="theme-toggle-dash"
-            aria-label="Toggle theme"
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
-
           <div
             className="user-avatar clickable"
             onClick={() => setEditMode(true)}
@@ -178,25 +143,6 @@ const UserDashboard = () => {
               {user.apellido?.charAt(0) || ""}
             </span>
           </div>
-
-          {showMenu && (
-            <div className="dropdown-menu">
-              <button
-                onClick={() => {
-                  setEditMode(true);
-                  setShowMenu(false);
-                }}
-                className="menu-item"
-              >
-                <span className="material-icons">edit</span>
-                Editar Perfil
-              </button>
-              <button onClick={handleLogout} className="menu-item logout">
-                <span className="material-icons">logout</span>
-                Cerrar Sesión
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -288,11 +234,6 @@ const UserDashboard = () => {
               </div>
 
               <div className="danger-zone-modal">
-                <button onClick={handleLogout} className="menu-item logout">
-                  <span className="material-icons">logout</span>
-                  Cerrar Sesión
-                </button>
-
                 <p>¿Deseas eliminar tu cuenta?</p>
                 <button
                   type="button"
@@ -346,7 +287,7 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Sección IMC detallada */}
+      {/* IMC Card */}
       <div className="imc-card">
         <h3 className="card-title">Índice de Masa Corporal</h3>
         <div className="imc-display-large">
@@ -382,7 +323,7 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* ===== PROGRESO SEMANAL ===== */}
+      {/* Progreso Semanal */}
       <div className="weekly-card">
         <div className="weekly-header">
           <h3 className="weekly-title">Progreso Semanal</h3>
@@ -404,7 +345,6 @@ const UserDashboard = () => {
               <div
                 className={`dia-circulo ${dia.hizoEjercicio ? "activo" : ""}`}
               />
-
               <span
                 className={`dia-texto ${dia.hizoEjercicio ? "activo" : ""}`}
               >
@@ -415,26 +355,24 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Sección de accesos rápidos */}
+      {/* Quick Access */}
       <div className="quick-access-section">
-        <div className="quick-card">
+        <div className="quick-card" onClick={() => navigate('/ejercicios')}>
           <div
             className="quick-card-image"
             style={{ backgroundImage: `url(${rutinasImg})` }}
           />
-
           <div className="quick-card-content">
             <p className="quick-card-title">Mis Rutinas</p>
             <p className="quick-card-subtitle">Gestionar planes</p>
           </div>
         </div>
 
-        <div className="quick-card">
+        <div className="quick-card" onClick={() => navigate('/estadisticas')}>
           <div
             className="quick-card-image"
             style={{ backgroundImage: `url(${estadisticasImg})` }}
           />
-
           <div className="quick-card-content">
             <p className="quick-card-title">Estadísticas</p>
             <p className="quick-card-subtitle">Ver progreso</p>
@@ -446,7 +384,6 @@ const UserDashboard = () => {
             className="quick-card-image"
             style={{ backgroundImage: `url(${nutricionImg})` }}
           />
-
           <div className="quick-card-content">
             <p className="quick-card-title">Nutrición</p>
             <p className="quick-card-subtitle">Próximamente</p>
