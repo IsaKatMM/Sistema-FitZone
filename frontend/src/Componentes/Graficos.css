@@ -1,0 +1,35 @@
+.grafico-card {
+  background: #0f172a;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+}
+
+.grafico-card .valor {
+  color: #f97316;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+}
+
+.grafico-fake {
+  height: 160px;
+  background: #1e293b;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.barras {
+  display: flex;
+  gap: 8px;
+  height: 160px;
+  align-items: flex-end;
+}
+
+.barras div {
+  flex: 1;
+  background: linear-gradient(#fb923c, #f97316);
+  border-radius: 6px 6px 0 0;
+}
