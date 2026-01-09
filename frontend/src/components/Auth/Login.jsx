@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import authService from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import './Login.css';
 
 const Login = () => {
@@ -14,17 +15,16 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
+  // ✅ Cargar tema solo una vez
   useEffect(() => {
-    // Cargar preferencia de tema desde localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setDarkMode(savedTheme === 'dark');
-    }
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setDarkMode(savedTheme === 'dark');
   }, []);
 
+  // ✅ Aplicar tema cuando cambie
   useEffect(() => {
-    // Aplicar tema al documento
     if (darkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -43,42 +43,31 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  if (loading) return;
 
-    try {
-      const response = await authService.login(formData);
-      console.log('Login exitoso:', response);
-      
-      // Redirigir según el rol del usuario
-      if (response.usuario && response.usuario.rol === 'ADMINISTRADOR') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/user/dashboard');
-      }
-    } catch (err) {
-      console.error('Error de login:', err);
-      
-      let errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';
-      
-      if (typeof err === 'string') {
-        errorMessage = err;
-      } else if (err.message) {
-        errorMessage = err.message;
-      } else if (err.response) {
-        errorMessage = err.response.data?.message || 
-                      err.response.data?.error || 
-                      'Credenciales inválidas';
-      } else if (err.request) {
-        errorMessage = 'No se pudo conectar con el servidor';
-      }
-      
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError('');
+
+  try {
+    const response = await authService.login(formData);
+
+    // 🔑 El backend devuelve { token, usuario }
+    const usuario = response.usuario;
+
+    // ✅ Avisar al AuthContext
+    login(usuario);
+
+    // ✅ Redirección simple (por ahora SOLO usuario)
+    navigate('/user/dashboard', { replace: true });
+
+  } catch (err) {
+    setError(err.message || 'Error al iniciar sesión');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
@@ -127,6 +116,7 @@ const Login = () => {
               placeholder="Enter your email"
               className="field-input"
               required
+              disabled={loading}
             />
           </div>
 
@@ -143,12 +133,14 @@ const Login = () => {
                 placeholder="Enter your password"
                 className="field-input password-input"
                 required
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="password-toggle"
                 aria-label="Toggle password visibility"
+                disabled={loading}
               >
                 <span className="material-icons">
                   {showPassword ? 'visibility_off' : 'visibility'}

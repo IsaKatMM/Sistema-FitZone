@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 
-function EjercicioDetalle({ ejercicio, onBack }) {
+function EjercicioDetalle({ ejercicio, onBack, isAdmin, onEditar, onEliminar }) {
 
   const agregarRutina = () => {
     Swal.fire({
@@ -23,9 +23,28 @@ function EjercicioDetalle({ ejercicio, onBack }) {
       <h3>Instrucciones</h3>
       <p>{ejercicio.descripcion}</p>
 
-      <button className="btn-rutina" onClick={agregarRutina}>
-        Agregar a Rutina
-      </button>
+      {/* Botones según el rol */}
+      <div className="detalle-actions">
+        {isAdmin ? (
+          // Botones para administradores
+          <>
+            <button className="btn-editar" onClick={() => onEditar(ejercicio)}>
+              <span className="material-icons">edit</span>
+              Editar Ejercicio
+            </button>
+            <button className="btn-eliminar" onClick={() => onEliminar(ejercicio)}>
+              <span className="material-icons">delete</span>
+              Eliminar Ejercicio
+            </button>
+          </>
+        ) : (
+          // Botón para usuarios
+          <button className="btn-rutina" onClick={agregarRutina}>
+            <span className="material-icons">add</span>
+            Agregar a Rutina
+          </button>
+        )}
+      </div>
     </div>
   );
 }

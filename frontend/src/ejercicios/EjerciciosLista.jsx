@@ -1,7 +1,7 @@
 import { useState } from "react";
 import EjercicioCard from "./EjercicioCard";
 
-function EjerciciosLista({ ejercicios, onSelect }) {
+function EjerciciosLista({ ejercicios, onSelect, isAdmin, onNuevo, onEditar, onEliminar }) {
   const [busqueda, setBusqueda] = useState("");
 
   const ejerciciosFiltrados = ejercicios.filter(e =>
@@ -10,26 +10,48 @@ function EjerciciosLista({ ejercicios, onSelect }) {
 
   return (
     <>
-      <h2 className="titulo">Exercises</h2>
+      <div className="header-ejercicios">
+        <h2 className="titulo">Ejercicios</h2>
+        
+        {isAdmin && (
+          <button className="btn-nuevo-ejercicio" onClick={onNuevo}>
+            <span className="material-icons">add</span>
+            Nuevo Ejercicio
+          </button>
+        )}
+      </div>
 
       {/* Barra de búsqueda */}
       <input
         className="search"
         type="text"
-        placeholder="Search exercises..."
+        placeholder="Buscar ejercicios..."
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
 
-      <div className="grid">
-        {ejerciciosFiltrados.map(e => (
-          <EjercicioCard
-            key={e.id}
-            ejercicio={e}
-            onClick={() => onSelect(e)}
-          />
-        ))}
-      </div>
+      {ejerciciosFiltrados.length === 0 ? (
+        <p className="no-results">No se encontraron ejercicios</p>
+      ) : (
+        <div className="grid">
+          {ejerciciosFiltrados.map(e => (
+            <EjercicioCard
+              key={e.id}
+              ejercicio={e}
+              onClick={() => onSelect(e)}
+              isAdmin={isAdmin}
+              onEditar={(event) => {
+                event.stopPropagation();
+                onEditar(e);
+              }}
+              onEliminar={(event) => {
+                event.stopPropagation();
+                onEliminar(e);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }

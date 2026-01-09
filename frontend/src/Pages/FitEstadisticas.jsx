@@ -1,97 +1,46 @@
-// src/Pages/FitEstadisticas.jsx
 import { useEffect, useState } from "react";
-import { useTheme } from "../context/ThemeContext";
-import "./FitEstadisticas.css";
-
-import EstadisticaCard from "../Componentes/EstadisticaCard";
 import FiltroRango from "../Componentes/FiltroRango";
+import EstadisticaCard from "../Componentes/EstadisticaCard";
 import GraficoLinea from "../Componentes/GraficoLinea";
 import GraficoBarras from "../Componentes/GraficoBarras";
 import ActividadReciente from "../Componentes/ActividadReciente";
-import Reportes from "../Componentes/Reportes";
+import { EstadisticaService } from "../Service/EstadisticaService";
 
 export default function FitEstadisticas() {
-  const { darkMode } = useTheme();
   const [rango, setRango] = useState("1M");
-
-  const [resumen, setResumen] = useState({
-    entrenamientos: 0,
-    duracionPromedio: 0,
-    calorias: 0,
-  });
+  const [estadisticas, setEstadisticas] = useState([]);
+  const [resumen, setResumen] = useState(null);
 
   useEffect(() => {
-    let nuevoResumen;
-
-    switch (rango) {
-      case "7D":
-        nuevoResumen = {
-          entrenamientos: 6,
-          duracionPromedio: 42,
-          calorias: 3200,
-        };
-        break;
-
-      case "1M":
-        nuevoResumen = {
-          entrenamientos: 28,
-          duracionPromedio: 45,
-          calorias: 12450,
-        };
-        break;
-
-      case "6M":
-        nuevoResumen = {
-          entrenamientos: 120,
-          duracionPromedio: 50,
-          calorias: 54000,
-        };
-        break;
-
-      default:
-        nuevoResumen = {
-          entrenamientos: 200,
-          duracionPromedio: 48,
-          calorias: 80000,
-        };
-    }
-
-    setResumen(nuevoResumen);
+    EstadisticaService.obtenerPorUsuario().then(setEstadisticas);
+    EstadisticaService.obtenerResumen(rango).then(setResumen);
   }, [rango]);
 
   return (
-    <div className={`page ${darkMode ? 'dark' : ''}`}>
-      <h1 className="titulo">Estadísticas y Reportes</h1>
-
-      <div className="stats">
-        <EstadisticaCard
-          titulo="Entrenamientos totales"
-          valor={resumen.entrenamientos}
-        />
-
-        <EstadisticaCard
-          titulo="Duración promedio"
-          valor={`${resumen.duracionPromedio} min`}
-        />
-
-        <EstadisticaCard
-          titulo="Calorías quemadas"
-          valor={(resumen.calorias ?? 0).toLocaleString()}
-        />
-      </div>
-
+    <>
       <FiltroRango rango={rango} setRango={setRango} />
 
-      <div className="graficos">
-        <GraficoLinea rango={rango} />
-        <GraficoBarras rango={rango} />
+      <div className="estadisticas-grid">
+        <EstadisticaCard
+          titulo="Entrenamientos totales"
+          valor={resumen?.totalEntrenamientos ?? 0}
+        />
+        <EstadisticaCard
+          titulo="Duración promedio"
+          valor={`${resumen?.promedioMinutos ?? 0} min`}
+        />
+        <EstadisticaCard
+          titulo="Calorías quemadas"
+          valor={`${resumen?.totalCalorias ?? 0} kcal`}
+        />
       </div>
 
-      <h2>Actividad reciente</h2>
-      <ActividadReciente />
+      <div className="graficos-grid">
+        <GraficoLinea estadisticas={estadisticas} rango={rango} />
+        <GraficoBarras estadisticas={estadisticas} rango={rango} />
+      </div>
 
-      <h2>Reportes</h2>
-      <Reportes />
-    </div>
+      <ActividadReciente estadisticas={estadisticas} />
+    </>
   );
 }

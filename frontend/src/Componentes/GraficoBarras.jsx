@@ -1,35 +1,54 @@
-import "./Graficos.css";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from "recharts";
 
-export default function GraficoBarras({ rango }) {
-  const datos = {
-    "7D": [40, 60, 30, 80, 50, 20, 70],
-    "1M": [60, 50, 40, 70, 80, 60, 90],
-    "6M": [30, 40, 50, 60, 70, 80, 90],
-    "ALL": [50, 50, 50, 50, 50, 50, 50],
-  };
+/**
+ * data esperada:
+ * [
+ *   { nombre: "Fuerza", valor: 10 },
+ *   { nombre: "Cardio", valor: 5 }
+ * ]
+ */
 
-  const dias = ["L", "M", "M", "J", "V", "S", "D"];
-  const valores = datos[rango] ?? [];
+const datosDefault = [
+  { nombre: "Fuerza", valor: 0 },
+  { nombre: "Cardio", valor: 0 },
+  { nombre: "Flexibilidad", valor: 0 },
+];
 
-  if (valores.length === 0) {
-    return <div className="grafico-card">Sin datos</div>;
-  }
+export default function GraficoBarras({ data }) {
+  const datosFinales =
+    Array.isArray(data) && data.length > 0 ? data : datosDefault;
+
+  const sinDatos = !data || data.length === 0;
 
   return (
-    <div className="grafico-card">
-      <h3>Volumen de entrenamiento ({rango})</h3>
-      <p className="valor">
-        {valores.reduce((a, b) => a + b, 0)} repeticiones
-      </p>
+    <div style={{ width: "100%", height: 280 }}>
+      <ResponsiveContainer>
+        <BarChart data={datosFinales}>
+          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+          <XAxis dataKey="nombre" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Bar
+            dataKey="valor"
+            fill="#f97316"
+            radius={[6, 6, 0, 0]}
+          />
+        </BarChart>
+      </ResponsiveContainer>
 
-      <div className="barras">
-        {valores.map((v, i) => (
-          <div key={i} className="barra-contenedor">
-            <div className="barra" style={{ height: `${v}%` }} />
-            <span>{dias[i]}</span>
-          </div>
-        ))}
-      </div>
+      {sinDatos && (
+        <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#64748b" }}>
+          No hay entrenamientos por categoría
+        </p>
+      )}
     </div>
   );
 }

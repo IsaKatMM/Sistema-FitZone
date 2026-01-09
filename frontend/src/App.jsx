@@ -1,65 +1,65 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import GlobalNavbar from './components/Navbar/GlobalNavbar';
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// Estadísticas
-import FitEstadisticas from './Pages/FitEstadisticas';
+import PrivateRoute from "./components/PrivateRoute";
+import PrivateLayout from "./components/layouts/PrivateLayout";
+import AuthLayout from "./components/layouts/AuthLayout";
 
-// Perfil, Rutinas y Recetas
-import UserProfile from './components/Profile/UserProfile';
-import RutinasDia from './components/Rutinas/RutinasDia';
-import RecetasPage from './components/recetas/RecetasPageNew';
+// Auth
+import Login from "./components/Auth/Login";
+import Register from "./components/Auth/Register";
 
-import './App.css';
+// User pages
+import UserDashboard from "./components/Dashboard/UserDashboard";
+import UserProfile from "./components/Profile/UserProfile";
+import RutinasDia from "./components/Rutinas/RutinasDia";
+import FitEstadisticas from "./Pages/FitEstadisticas";
+import FitSILApp from "./fitsilApp/FitSILApp"; // ✅ ESTE es tu sistema de ejercicios
+import RecetasPage from "./components/Recetas/RecetasPage";
 
-// Componente de prueba para Dashboard
-const TestDashboard = () => {
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Dashboard de Prueba</h1>
-      <p>Esta es una vista de prueba para verificar el navbar y el modo oscuro/claro.</p>
-      <div style={{ marginTop: '2rem', display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-        <div style={{ padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
-          <h3>Card 1</h3>
-          <p>Contenido de ejemplo</p>
-        </div>
-        <div style={{ padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
-          <h3>Card 2</h3>
-          <p>Contenido de ejemplo</p>
-        </div>
-        <div style={{ padding: '1.5rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
-          <h3>Card 3</h3>
-          <p>Contenido de ejemplo</p>
-        </div>
-      </div>
-    </div>
-  );
-};
+// Admin pages
+import AdminDashboard from "./components/Dashboard/AdminDashboard";
+import AdminUsuarios from "./components/Admin/AdminUsuarios";
 
 function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <div className="App">
-          <GlobalNavbar />
-          <main style={{ minHeight: 'calc(100vh - 70px)', padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}>
-            <Routes>
-              <Route path="/" element={<TestDashboard />} />
-              <Route path="/user/dashboard" element={<TestDashboard />} />
-              <Route path="/admin/dashboard" element={<TestDashboard />} />
-              <Route path="/ejercicios" element={<TestDashboard />} />
-              <Route path="/estadisticas" element={<FitEstadisticas />} />
-              <Route path="/rutinas" element={<RutinasDia />} />
-              <Route path="/recetas" element={<RecetasPage />} />
-              <Route path="/perfil" element={<UserProfile />} />
-                <Route path="/admin/agregar-ejercicio" element={<TestDashboard />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </ThemeProvider>
+    <Routes>
+
+      {/* ===================== */}
+      {/* RUTAS PÚBLICAS */}
+      {/* ===================== */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
+
+      {/* ===================== */}
+      {/* RUTAS PRIVADAS */}
+      {/* ===================== */}
+      <Route element={<PrivateRoute />}>
+        <Route element={<PrivateLayout />}>
+
+          {/* ----- USUARIO ----- */}
+          <Route path="/user/dashboard" element={<UserDashboard />} />
+          <Route path="/ejercicios" element={<FitSILApp />} />
+          <Route path="/rutinas" element={<RutinasDia />} />
+          <Route path="/estadisticas" element={<FitEstadisticas />} />
+          <Route path="/recetas" element={<RecetasPage />} />
+          <Route path="/perfil" element={<UserProfile />} />
+
+          {/* ----- ADMIN ----- */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+          <Route path="/admin/ejercicios" element={<FitSILApp />} /> {/* ✅ USAR EL MISMO COMPONENTE */}
+
+        </Route>
+      </Route>
+
+      {/* ===================== */}
+      {/* RUTA POR DEFECTO */}
+      {/* ===================== */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+
+    </Routes>
   );
 }
 

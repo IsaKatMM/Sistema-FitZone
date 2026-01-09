@@ -1,10 +1,13 @@
 // src/admin/AdminAgregarEjercicio.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
+import { guardarEjercicio } from "../fitsilServices/FitApiEjercicios";
 import "./admin.css";
 
 function AdminAgregarEjercicio() {
   const { darkMode } = useTheme();
+  const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
   const [musculo, setMusculo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -26,28 +29,22 @@ function AdminAgregarEjercicio() {
       formData.append("descripcion", descripcion);
       if (imagen) formData.append("imagen", imagen);
 
-      const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:8080/ejercicios/guardar", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        alert("✅ Ejercicio guardado correctamente");
-        // Limpiar campos
-        setNombre("");
-        setMusculo("");
-        setDescripcion("");
-        setImagen(null);
-      } else {
-        const error = await response.text();
-        alert("❌ Error: " + error);
-      }
+      await guardarEjercicio(formData);
+      
+      alert("✅ Ejercicio guardado correctamente");
+      
+      // Limpiar campos
+      setNombre("");
+      setMusculo("");
+      setDescripcion("");
+      setImagen(null);
+      
+      // Opcional: redirigir a la lista de ejercicios
+      // navigate("/ejercicios");
+      
     } catch (error) {
-      alert("❌ Error al guardar: " + error.message);
+      console.error("Error al guardar:", error);
+      alert("❌ Error: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -56,8 +53,18 @@ function AdminAgregarEjercicio() {
   return (
     <div className={`admin-wrapper ${darkMode ? 'dark' : ''}`}>
       <div className="admin-card">
-        <h2 className="admin-title">Panel de Administrador</h2>
-        <p className="admin-subtitle">Agregar nuevo ejercicio</p>
+        <div className="admin-header">
+          <button 
+            className="back-btn" 
+            onClick={() => navigate('/admin/dashboard')}
+          >
+            ← Volver
+          </button>
+          <div>
+            <h2 className="admin-title">Panel de Administrador</h2>
+            <p className="admin-subtitle">Agregar nuevo ejercicio</p>
+          </div>
+        </div>
 
         <div className="admin-form">
           <input
@@ -81,6 +88,7 @@ function AdminAgregarEjercicio() {
             placeholder="Descripción del ejercicio"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
+            rows="4"
           />
 
           <input

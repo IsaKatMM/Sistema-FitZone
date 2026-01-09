@@ -1,38 +1,61 @@
-import "./Graficos.css";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from "recharts";
 
-export default function GraficoLinea({ rango }) {
-  const pesos = {
-    "7D": [72, 71.8, 71.5, 71.2, 71, 70.8, 70.6],
-    "1M": [73, 72.5, 72, 71.5, 71, 70.5, 70],
-    "6M": [75, 74, 73, 72, 71, 70.5, 70],
-    "ALL": [78, 76, 74, 72, 71, 70.5, 70],
-  };
+/**
+ * data esperada:
+ * [
+ *   { fecha: "Lun", valor: 120 },
+ *   { fecha: "Mar", valor: 200 }
+ * ]
+ */
 
-  const data = pesos[rango] ?? [];
+const datosDefault = [
+  { fecha: "Lun", valor: 0 },
+  { fecha: "Mar", valor: 0 },
+  { fecha: "Mié", valor: 0 },
+  { fecha: "Jue", valor: 0 },
+  { fecha: "Vie", valor: 0 },
+  { fecha: "Sáb", valor: 0 },
+  { fecha: "Dom", valor: 0 },
+];
 
-  if (data.length === 0) {
-    return <div className="grafico-card">Sin datos</div>;
-  }
+export default function GraficoLinea({ data }) {
+  const datosFinales =
+    Array.isArray(data) && data.length > 0 ? data : datosDefault;
 
-  const ultimoPeso = data[data.length - 1];
-
-  const puntos = data
-    .map((v, i) => `${i * 15},${40 - (v - 70) * 5}`)
-    .join(" ");
+  const sinDatos = !data || data.length === 0;
 
   return (
-    <div className="grafico-card">
-      <h3>Tendencia de peso ({rango})</h3>
-      <p className="valor">{ultimoPeso} kg</p>
+    <div style={{ width: "100%", height: 280 }}>
+      <ResponsiveContainer>
+        <LineChart data={datosFinales}>
+          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+          <XAxis dataKey="fecha" />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="valor"
+            stroke="#3b82f6"
+            strokeWidth={3}
+            dot={{ r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
 
-      <svg viewBox="0 0 100 40" className="grafico-linea">
-        <polyline
-          fill="none"
-          stroke="#ff7a00"
-          strokeWidth="2"
-          points={puntos}
-        />
-      </svg>
+      {sinDatos && (
+        <p style={{ textAlign: "center", fontSize: "0.85rem", color: "#64748b" }}>
+          Aún no hay actividad registrada
+        </p>
+      )}
     </div>
   );
 }

@@ -1,198 +1,173 @@
 // src/components/Navbar/GlobalNavbar.jsx
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useTheme } from '../../context/ThemeContext';
-import './GlobalNavbar.css';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
+import "./GlobalNavbar.css";
 
 const GlobalNavbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { darkMode, toggleTheme, increaseText, decreaseText, textScale, speakOnHover, toggleSpeak } = useTheme();
+  const { user, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
 
-  // Usuario de prueba para visualización (sin backend)
-  const user = {
-    nombre: 'Usuario',
-    apellido: 'Demo',
-    correo: 'demo@fitsil.com',
-    rol: 'ADMINISTRADOR'
-  };
+  if (!user) return null;
 
-  const isAdmin = user?.rol === 'ADMINISTRADOR';
-
-  const handleLogout = () => {
-    alert('Función de logout (solo prueba visual)');
-  };
-
+  const isAdmin = user.rol === "ADMINISTRADOR";
   const isActive = (path) => location.pathname === path;
 
+  const handleLogout = () => {
+    if (window.confirm("¿Cerrar sesión?")) {
+      logout();
+      navigate("/login");
+    }
+  };
+
   return (
-    <nav className={`global-navbar ${darkMode ? 'dark' : ''}`} aria-label="Barra de navegación">
+    <nav className={`global-navbar ${darkMode ? "dark" : ""}`}>
       <div className="navbar-container">
-        {/* Logo */}
-        <div className="navbar-brand" onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard')}>
-          <span className="material-icons logo-icon">fitness_center</span>
-          <span className="brand-name">FitSIL</span>
+
+        {/* LOGO */}
+        <div
+          className="navbar-brand"
+          onClick={() =>
+            navigate(isAdmin ? "/admin/dashboard" : "/user/dashboard")
+          }
+        >
+          <span className="material-icons">fitness_center</span>
+          <span>FitSIL</span>
         </div>
 
-        {/* Navigation Links */}
-        <div className="navbar-links" role="list">
+        {/* LINKS */}
+        <div className="navbar-links">
+
+          {/* Dashboard - Para todos */}
           <button
-            className={`nav-link ${isActive('/user/dashboard') || isActive('/admin/dashboard') ? 'active' : ''}`}
-            onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard')}
-            aria-label="Ir al dashboard"
-            role="listitem"
+            className={`nav-link ${
+              isActive("/user/dashboard") || isActive("/admin/dashboard")
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              navigate(isAdmin ? "/admin/dashboard" : "/user/dashboard")
+            }
           >
             <span className="material-icons">dashboard</span>
-            <span>Dashboard</span>
+            Dashboard
           </button>
 
+          {/* Ejercicios - Rutas diferentes para Admin y Usuario */}
           <button
-            className={`nav-link ${isActive('/ejercicios') ? 'active' : ''}`}
-            onClick={() => navigate('/ejercicios')}
-            aria-label="Ver ejercicios"
-            role="listitem"
+            className={`nav-link ${
+              isActive("/admin/ejercicios") || isActive("/ejercicios") ? "active" : ""
+            }`}
+            onClick={() => navigate(isAdmin ? "/admin/ejercicios" : "/ejercicios")}
           >
-            <span className="material-icons">exercise</span>
-            <span>Ejercicios</span>
+            <span className="material-icons">fitness_center</span>
+            Ejercicios
           </button>
 
-          <button
-            className={`nav-link ${isActive('/rutinas') ? 'active' : ''}`}
-            onClick={() => navigate('/rutinas')}
-            aria-label="Ver rutinas del día"
-            role="listitem"
-          >
-            <span className="material-icons">event_note</span>
-            <span>Rutinas</span>
-          </button>
+          {/* ✅ SOLO USUARIOS - Rutinas */}
+          {!isAdmin && (
+            <button
+              className={`nav-link ${isActive("/rutinas") ? "active" : ""}`}
+              onClick={() => navigate("/rutinas")}
+            >
+              <span className="material-icons">repeat</span>
+              Rutinas
+            </button>
+          )}
 
-          <button
-            className={`nav-link ${isActive('/recetas') ? 'active' : ''}`}
-            onClick={() => navigate('/recetas')}
-            aria-label="Ver recetas saludables"
-            role="listitem"
-          >
-            <span className="material-icons">restaurant</span>
-            <span>Recetas</span>
-          </button>
+          {/* ✅ SOLO USUARIOS - Recetas */}
+          {!isAdmin && (
+            <button
+              className={`nav-link ${isActive("/recetas") ? "active" : ""}`}
+              onClick={() => navigate("/recetas")}
+            >
+              <span className="material-icons">restaurant_menu</span>
+              Recetas
+            </button>
+          )}
 
-          <button
-            className={`nav-link ${isActive('/estadisticas') ? 'active' : ''}`}
-            onClick={() => navigate('/estadisticas')}
-            aria-label="Ver estadísticas"
-            role="listitem"
-          >
-            <span className="material-icons">analytics</span>
-            <span>Estadísticas</span>
-          </button>
+          {/* ✅ SOLO USUARIOS - Estadísticas */}
+          {!isAdmin && (
+            <button
+              className={`nav-link ${isActive("/estadisticas") ? "active" : ""}`}
+              onClick={() => navigate("/estadisticas")}
+            >
+              <span className="material-icons">bar_chart</span>
+              Estadísticas
+            </button>
+          )}
 
+          {/* ✅ SOLO ADMIN - Usuarios */}
           {isAdmin && (
             <button
-              className={`nav-link ${isActive('/admin/agregar-ejercicio') ? 'active' : ''}`}
-              onClick={() => navigate('/admin/agregar-ejercicio')}
-              aria-label="Agregar ejercicio"
-              role="listitem"
+              className={`nav-link ${isActive("/admin/usuarios") ? "active" : ""}`}
+              onClick={() => navigate("/admin/usuarios")}
             >
-              <span className="material-icons">add_circle</span>
-              <span>Agregar</span>
+              <span className="material-icons">group</span>
+              Usuarios
             </button>
           )}
         </div>
 
-        {/* Right Actions */}
+        {/* ACCIONES */}
         <div className="navbar-actions">
-          {/* Theme Toggle */}
-          <button onClick={toggleTheme} className="theme-toggle" aria-label="Cambiar tema" aria-pressed={darkMode}>
-            {darkMode ? '☀️' : '🌙'}
+          <button className="theme-toggle" onClick={toggleTheme}>
+            {darkMode ? "☀️" : "🌙"}
           </button>
 
-          {/* User Menu */}
           <div className="user-menu">
-            <div 
+            <div
               className="user-avatar"
               onClick={() => setShowMenu(!showMenu)}
-              aria-label="Abrir menú de usuario"
-              aria-haspopup="menu"
-              aria-expanded={showMenu}
-              role="button"
             >
               <span className="avatar-initials">
-                {user?.nombre?.charAt(0)}{user?.apellido?.charAt(0) || ''}
+                {user.nombre[0]}
+                {user.apellido?.[0] || ""}
               </span>
             </div>
 
             {showMenu && (
-              <div className="dropdown-menu" role="menu">
+              <div className="dropdown-menu">
                 <div className="user-info">
-                  <p className="user-name">{user?.nombre} {user?.apellido}</p>
-                  <p className="user-email">{user?.correo}</p>
-                  <span className={`user-role ${isAdmin ? 'admin' : 'user'}`}>
-                    {user?.rol}
-                  </span>
+                  <p className="user-name">{user.nombre} {user.apellido}</p>
+                  <p className="user-email">{user.correo}</p>
+                  <span className={`user-role ${isAdmin ? "admin" : "user"}`}>{user.rol}</span>
                 </div>
 
                 <div className="menu-divider"></div>
 
-                <div className="text-zoom" aria-label="Controles de tamaño de texto" role="group">
-                  <button onClick={decreaseText} className="text-zoom-btn" aria-label="Disminuir tamaño de texto">A-</button>
-                  <span className="text-zoom-value" aria-live="polite">{textScale}%</span>
-                  <button onClick={increaseText} className="text-zoom-btn" aria-label="Aumentar tamaño de texto">A+</button>
+                {/* Aumentar/Disminuir tamaño de texto */}
+                <div className="text-zoom">
+                  <button className="text-zoom-btn" onClick={decreaseText}>A-</button>
+                  <span className="text-zoom-value">{textScale}%</span>
+                  <button className="text-zoom-btn" onClick={increaseText}>A+</button>
                 </div>
 
-                <button 
-                  className="menu-item"
-                  onClick={() => {
-                    toggleSpeak();
-                  }}
-                  aria-label="Alternar lectura en hover"
-                  role="menuitem"
-                >
+                {/* Lectura guiada */}
+                <button className="menu-item" onClick={toggleSpeak}>
                   <span className="material-icons">record_voice_over</span>
-                  {speakOnHover ? 'Desactivar lectura' : 'Activar lectura'}
+                  {speakOnHover ? "Desactivar lectura" : "Activar lectura"}
                 </button>
 
                 <div className="menu-divider"></div>
 
-                <button 
-                  className="menu-item"
-                  onClick={() => {
-                    setShowMenu(false);
-                    navigate(isAdmin ? '/admin/dashboard' : '/user/dashboard');
-                  }}
-                  aria-label="Ir a mi perfil"
-                  role="menuitem"
-                >
+                <button className="menu-item" onClick={() => navigate("/perfil")}>
                   <span className="material-icons">person</span>
                   Mi Perfil
                 </button>
 
                 {isAdmin && (
-                  <button 
-                    className="menu-item"
-                    onClick={() => {
-                      setShowMenu(false);
-                      navigate('/admin/usuarios');
-                    }}
-                    aria-label="Gestionar usuarios"
-                    role="menuitem"
-                  >
+                  <button className="menu-item" onClick={() => navigate("/admin/usuarios")}>
                     <span className="material-icons">group</span>
                     Gestionar Usuarios
                   </button>
                 )}
 
-                <div className="menu-divider"></div>
-
-                <button 
-                  className="menu-item logout"
-                  onClick={() => {
-                    setShowMenu(false);
-                    handleLogout();
-                  }}
-                  aria-label="Cerrar sesión"
-                  role="menuitem"
-                >
+                <button className="menu-item logout" onClick={handleLogout}>
                   <span className="material-icons">logout</span>
                   Cerrar Sesión
                 </button>
@@ -201,15 +176,6 @@ const GlobalNavbar = () => {
           </div>
         </div>
       </div>
-
-      {/* Overlay para cerrar el menú al hacer click fuera */}
-      {showMenu && (
-        <div 
-          className="menu-overlay" 
-          onClick={() => setShowMenu(false)}
-          aria-label="Cerrar menú de usuario"
-        />
-      )}
     </nav>
   );
 };

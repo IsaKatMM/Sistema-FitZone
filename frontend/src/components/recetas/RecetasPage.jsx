@@ -1,98 +1,207 @@
-import { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { useState } from "react";
 import "./recetas.css";
+
+// IMÁGENES
+import arrozPollo from "./imagenesRecetas/arroz_pollo.avif";
+import pastaCarne from "./imagenesRecetas/pasta_carne.jpeg";
+import batidoProteina from "./imagenesRecetas/batido_proteina.jpg";
+import avenaHuevo from "./imagenesRecetas/avena_huevo.webp";
+
+import ensaladaPollo from "./imagenesRecetas/ensalada_pollo.jpg";
+import salmonVegetales from "./imagenesRecetas/salmon_vegetales.avif";
+import smoothieVerde from "./imagenesRecetas/smoothie_verde.webp";
+import sopaVerduras from "./imagenesRecetas/sopa_verduras.jpg";
 
 export default function RecetasPage() {
   const { darkMode } = useTheme();
-  const [recetas, setRecetas] = useState([]);
-  const [fontScale, setFontScale] = useState(1);
-  const [mensajeAccesible, setMensajeAccesible] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [recetaActiva, setRecetaActiva] = useState(null);
 
-  useEffect(() => {
-    setLoading(true);
-    const mockRecetas = [
-      { id: 1, nombre: "Ensalada griega", descripcion: "Ensalada fresca con tomate, pepino y queso feta", imagenUrl: "https://via.placeholder.com/240x160?text=Ensalada" },
-      { id: 2, nombre: "Pechuga a la plancha", descripcion: "Pechuga de pollo marinada y a la plancha", imagenUrl: "https://via.placeholder.com/240x160?text=Pechuga" },
-      { id: 3, nombre: "Smoothie de frutas", descripcion: "Batido nutritivo con plátano, fresas y yogur", imagenUrl: "https://via.placeholder.com/240x160?text=Smoothie" }
-    ];
-    setTimeout(() => {
-      setRecetas(mockRecetas);
-      setMensajeAccesible(`Se cargaron ${mockRecetas.length} recetas`);
-      setLoading(false);
-    }, 500);
-  }, []);
+  const recetasPorObjetivo = [
+    {
+      titulo: "💪 Ganar masa muscular",
+      recetas: [
+        {
+          nombre: "Arroz con pollo",
+          descripcion: "Alta en proteínas y carbohidratos",
+          imagen: arrozPollo,
+          ingredientes: [
+            "1 taza de arroz",
+            "200 g de pechuga de pollo",
+            "Zanahoria",
+            "Sal y especias"
+          ],
+          preparacion: [
+            "Cocinar el arroz.",
+            "Saltear el pollo con especias.",
+            "Mezclar y servir."
+          ]
+        },
+        {
+          nombre: "Pasta con carne",
+          descripcion: "Ideal post-entreno",
+          imagen: pastaCarne,
+          ingredientes: [
+            "200 g de pasta",
+            "150 g de carne molida",
+            "Salsa de tomate"
+          ],
+          preparacion: [
+            "Cocer la pasta.",
+            "Preparar la carne.",
+            "Mezclar con la salsa."
+          ]
+        },
+        {
+          nombre: "Batido de proteína",
+          descripcion: "Recuperación muscular",
+          imagen: batidoProteina,
+          ingredientes: [
+            "Proteína en polvo",
+            "Banana",
+            "Leche"
+          ],
+          preparacion: [
+            "Licuar todos los ingredientes.",
+            "Servir frío."
+          ]
+        },
+        {
+          nombre: "Avena con huevo",
+          descripcion: "Energía completa para el día",
+          imagen: avenaHuevo,
+          ingredientes: [
+            "Avena",
+            "2 huevos",
+            "Canela"
+          ],
+          preparacion: [
+            "Cocer la avena.",
+            "Añadir huevos revueltos.",
+            "Mezclar y servir."
+          ]
+        }
+      ]
+    },
+    {
+      titulo: "🔥 Perder peso",
+      recetas: [
+        {
+          nombre: "Ensalada de pollo",
+          descripcion: "Ligera y nutritiva",
+          imagen: ensaladaPollo,
+          ingredientes: [
+            "Pechuga de pollo",
+            "Lechuga",
+            "Tomate"
+          ],
+          preparacion: [
+            "Cocer el pollo.",
+            "Cortar vegetales.",
+            "Mezclar."
+          ]
+        },
+        {
+          nombre: "Salmón con vegetales",
+          descripcion: "Grasas saludables",
+          imagen: salmonVegetales,
+          ingredientes: [
+            "Salmón",
+            "Brócoli",
+            "Zanahoria"
+          ],
+          preparacion: [
+            "Cocinar el salmón.",
+            "Hervir vegetales.",
+            "Servir."
+          ]
+        },
+        {
+          nombre: "Smoothie verde",
+          descripcion: "Desintoxicante natural",
+          imagen: smoothieVerde,
+          ingredientes: [
+            "Espinaca",
+            "Manzana verde",
+            "Agua"
+          ],
+          preparacion: [
+            "Licuar todo.",
+            "Servir frío."
+          ]
+        },
+        {
+          nombre: "Sopa de verduras",
+          descripcion: "Saciante y baja en calorías",
+          imagen: sopaVerduras,
+          ingredientes: [
+            "Zanahoria",
+            "Apio",
+            "Calabacín"
+          ],
+          preparacion: [
+            "Hervir los vegetales.",
+            "Licuar parcialmente.",
+            "Servir caliente."
+          ]
+        }
+      ]
+    }
+  ];
 
   return (
-    <section
-      className={`recetas-page ${darkMode ? 'dark' : ''}`}
-      style={{ fontSize: `${fontScale}rem` }}
-      aria-labelledby="recetas-title"
-    >
-      {/* Región accesible */}
-      <div aria-live="polite" className="sr-only">
-        {mensajeAccesible}
-      </div>
+    <section className={`recetas-page ${darkMode ? "dark" : ""}`}>
+      <h2 className="recetas-title">🍽 Recetas saludables</h2>
 
-      {/* Header interno */}
-      <header className="recetas-header">
-        <h2 id="recetas-title">Recetas saludables</h2>
+      {recetasPorObjetivo.map(seccion => (
+        <div key={seccion.titulo} className="recetas-section">
+          <h3 className="section-title">{seccion.titulo}</h3>
 
-        <div
-          className="zoom-controls"
-          role="group"
-          aria-label="Control de tamaño de texto"
-        >
-          <button
-            onClick={() => setFontScale(f => Math.max(0.8, f - 0.1))}
-            aria-label="Disminuir tamaño de texto"
-          >
-            A-
-          </button>
-          <button
-            onClick={() => setFontScale(1)}
-            aria-label="Restablecer tamaño de texto"
-          >
-            A
-          </button>
-          <button
-            onClick={() => setFontScale(f => Math.min(1.5, f + 0.1))}
-            aria-label="Aumentar tamaño de texto"
-          >
-            A+
-          </button>
+          <div className="recetas-row">
+            {seccion.recetas.map(receta => (
+              <article key={receta.nombre} className="receta-card">
+                <img src={receta.imagen} alt={receta.nombre} />
+                <h4>{receta.nombre}</h4>
+                <p className="receta-desc">{receta.descripcion}</p>
+
+                <button
+                  className="btn"
+                  onClick={() => setRecetaActiva(receta)}
+                >
+                  Ver preparación
+                </button>
+              </article>
+            ))}
+          </div>
         </div>
-      </header>
+      ))}
 
-      {/* Grid */}
-      {loading && <p className="recetas-loading">Cargando recetas...</p>}
-      
-      {!loading && recetas.length > 0 && (
-        <div
-          className="recetas-grid"
-          role="list"
-          aria-label="Listado de recetas"
-        >
-          {recetas.map(receta => (
-            <article
-              key={receta.id}
-              className="receta-card"
-              role="listitem"
-              tabIndex="0"
-              aria-labelledby={`receta-${receta.id}`}
-            >
-              <img
-                src={receta.imagenUrl}
-                alt={`Imagen de ${receta.nombre}`}
-              />
-              <h3 id={`receta-${receta.id}`}>{receta.nombre}</h3>
-              <p>{receta.descripcion}</p>
-            </article>
-          ))}
+      {/* MODAL */}
+      {recetaActiva && (
+        <div className="modal-overlay" onClick={() => setRecetaActiva(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h3>{recetaActiva.nombre}</h3>
+
+            <strong>Ingredientes:</strong>
+            <ul>
+              {recetaActiva.ingredientes.map((i, idx) => (
+                <li key={idx}>{i}</li>
+              ))}
+            </ul>
+
+            <strong>Preparación:</strong>
+            <ol>
+              {recetaActiva.preparacion.map((p, idx) => (
+                <li key={idx}>{p}</li>
+              ))}
+            </ol>
+
+            <button className="btn close" onClick={() => setRecetaActiva(null)}>
+              Cerrar
+            </button>
+          </div>
         </div>
       )}
-      
-      {!loading && recetas.length === 0 && <p className="recetas-empty">No hay recetas disponibles</p>}
     </section>
   );
 }

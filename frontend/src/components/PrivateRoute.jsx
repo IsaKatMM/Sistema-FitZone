@@ -1,22 +1,9 @@
-// src/components/PrivateRoute.jsx
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const PrivateRoute = ({ children, requireAdmin = false }) => {
-  const isAuthenticated = authService.isAuthenticated();
-  const currentUser = authService.getCurrentUser();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Verificar si requiere ser administrador
-  if (requireAdmin && currentUser?.rol !== 'ADMINISTRADOR') {
-    return <Navigate to="/user/dashboard" replace />;
-  }
-
-  return children;
+const PrivateRoute = () => {
+  const { user } = useAuth();
+  return user ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

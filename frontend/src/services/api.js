@@ -1,7 +1,7 @@
 // src/services/api.js
 import axios from 'axios';
 
-// Crear instancia de axios con configuración base
+// Crear instancia de axios
 const api = axios.create({
   baseURL: 'http://localhost:8081',
   headers: {
@@ -9,18 +9,30 @@ const api = axios.create({
   }
 });
 
-// Interceptor para agregar el token a cada petición
+/**
+ * ============================
+ * INTERCEPTOR DE REQUEST
+ * ============================
+ * 👉 NO agrega token a:
+ *    - /login
+ *    - /registro
+ */
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    
-    if (token) {
+
+    // Endpoints que NO deben llevar token
+    const isAuthEndpoint =
+      config.url.includes('/login') ||
+      config.url.includes('/registro');
+
+    if (token && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 Token agregado a la petición:', config.url);
+      console.log('🔑 Token agregado a:', config.url);
     } else {
-      console.warn('⚠️ No hay token disponible para:', config.url);
+      console.log('🚫 Petición SIN token:', config.url);
     }
-    
+
     return config;
   },
   (error) => {
@@ -29,37 +41,44 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas y errores
+/**
+ * ============================
+ * INTERCEPTOR DE RESPONSE
+ * ============================
+ */
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ Respuesta exitosa de:', response.config.url);
+    console.log('✅ Respuesta OK:', response.config.url);
     return response;
   },
   (error) => {
-    console.error('❌ Error en respuesta de:', error.config?.url);
-    console.error('Status:', error.response?.status);
+    const status = error.response?.status;
+    const url = error.config?.url;
+
+    console.error('❌ Error en respuesta:', url);
+    console.error('Status:', status);
     console.error('Data:', error.response?.data);
-    
-    // Si el token es inválido o expiró (401)
-    if (error.response?.status === 401) {
-      console.error('🚨 Token inválido o expiró');
-      
-      // Limpiar localStorage
+
+    // Token inválido o expirado
+    if (status === 401) {
+      console.warn('🚨 Token inválido o expirado');
+
+      // Limpiar sesión
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
-      // Redirigir al login solo si no estamos ya ahí
+
+      // Redirigir SOLO si no estamos en login
       if (!window.location.pathname.includes('/login')) {
-        console.log('🔄 Redirigiendo al login...');
+        console.log('🔄 Redirigiendo a /login...');
         window.location.href = '/login';
       }
     }
-    
-    // Si es un error de permisos (403)
-    if (error.response?.status === 403) {
-      console.error('🚨 No tienes permisos para esta acción');
+
+    // Sin permisos
+    if (status === 403) {
+      console.warn('🚫 Acceso denegado (403)');
     }
-    
+
     return Promise.reject(error);
   }
 );

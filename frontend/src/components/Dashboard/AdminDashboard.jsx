@@ -7,7 +7,7 @@ import adminService from '../../services/adminService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { darkMode } = useTheme(); // ✅ Usar tema global
+  const { darkMode } = useTheme();
   const [admin, setAdmin] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -16,7 +16,9 @@ const AdminDashboard = () => {
   const [usuariosFiltrados, setUsuariosFiltrados] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [estadisticas, setEstadisticas] = useState({
-    totalUsuarios: 0,
+    total: 0,
+    administradores: 0,
+    usuarios: 0,
     promedioPeso: 0,
     promedioAltura: 0
   });
@@ -36,31 +38,50 @@ const AdminDashboard = () => {
   const cargarDatos = async () => {
     setLoading(true);
     try {
+      // Cargar usuarios
       let usuariosData = [];
       try {
         usuariosData = await adminService.listarUsuarios();
+        console.log('✅ Usuarios cargados:', usuariosData.length);
       } catch (error) {
         console.error('⚠️ Error al cargar usuarios:', error.response?.status);
       }
       
-      let statsData = { totalUsuarios: 0, promedioPeso: 0, promedioAltura: 0 };
+      // Cargar estadísticas del backend
+      let statsData = { total: 0, administradores: 0, usuarios: 0 };
       try {
         statsData = await adminService.obtenerEstadisticas();
+        console.log('✅ Estadísticas del backend:', statsData);
       } catch (error) {
-        if (usuariosData.length > 0) {
-          const totalPeso = usuariosData.reduce((sum, u) => sum + (u.peso || 0), 0);
-          const totalAltura = usuariosData.reduce((sum, u) => sum + (u.altura || 0), 0);
-          statsData = {
-            totalUsuarios: usuariosData.length,
-            promedioPeso: usuariosData.length > 0 ? totalPeso / usuariosData.length : 0,
-            promedioAltura: usuariosData.length > 0 ? totalAltura / usuariosData.length : 0
-          };
+        console.error('⚠️ Error al cargar estadísticas:', error);
+      }
+      
+      // ✅ CALCULAR PROMEDIOS LOCALMENTE
+      let promedioPeso = 0;
+      let promedioAltura = 0;
+      
+      if (usuariosData.length > 0) {
+        const usuariosConPeso = usuariosData.filter(u => u.peso && u.peso > 0);
+        const usuariosConAltura = usuariosData.filter(u => u.altura && u.altura > 0);
+        
+        if (usuariosConPeso.length > 0) {
+          const totalPeso = usuariosConPeso.reduce((sum, u) => sum + u.peso, 0);
+          promedioPeso = totalPeso / usuariosConPeso.length;
+        }
+        
+        if (usuariosConAltura.length > 0) {
+          const totalAltura = usuariosConAltura.reduce((sum, u) => sum + u.altura, 0);
+          promedioAltura = totalAltura / usuariosConAltura.length;
         }
       }
       
       setUsuarios(usuariosData);
       setUsuariosFiltrados(usuariosData);
-      setEstadisticas(statsData);
+      setEstadisticas({
+        ...statsData,
+        promedioPeso,
+        promedioAltura
+      });
       setUsuariosActivos(adminService.calcularUsuariosActivos(usuariosData));
       
     } catch (error) {
@@ -125,7 +146,7 @@ const AdminDashboard = () => {
           
           <button 
             className={`nav-item ${activeSection === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveSection('users')}
+            onClick={() => navigate('/admin/usuarios')}
           >
             <span className="material-icons">group</span>
             <span className="nav-text">Usuarios</span>
@@ -151,7 +172,7 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="admin-main-content">
-        {/* Header sin botón de tema */}
+        {/* Header */}
         <header className="admin-header">
           <h1 className="admin-title">Admin Dashboard</h1>
           
@@ -203,7 +224,7 @@ const AdminDashboard = () => {
                       </div>
                       <div className="info-text">
                         <span className="info-label-profile">Usuario</span>
-                        <span className="info-value-profile">@{admin.usuario}</span>
+                        <span className="info-value-profile">@{admin.usuario || 'N/A'}</span>
                       </div>
                     </div>
 
@@ -249,114 +270,28 @@ const AdminDashboard = () => {
           <section className="stats-section">
             <div className="stat-card-admin">
               <p className="stat-label-admin">Total Usuarios</p>
-              <p className="stat-value-admin">{estadisticas.totalUsuarios}</p>
+              <p className="stat-value-admin">{estadisticas.total || 0}</p>
             </div>
             
             <div className="stat-card-admin">
-              <p className="stat-label-admin">Activos Hoy</p>
-              <p className="stat-value-admin">{usuariosActivos}</p>
+              <p className="stat-label-admin">Administradores</p>
+              <p className="stat-value-admin">{estadisticas.administradores || 0}</p>
             </div>
             
             <div className="stat-card-admin">
               <p className="stat-label-admin">Peso Promedio</p>
-              <p className="stat-value-admin">{estadisticas.promedioPeso.toFixed(1)} kg</p>
+              <p className="stat-value-admin">
+                {estadisticas.promedioPeso > 0 ? estadisticas.promedioPeso.toFixed(1) : '0'} kg
+              </p>
             </div>
             
             <div className="stat-card-admin">
               <p className="stat-label-admin">Altura Promedio</p>
-              <p className="stat-value-admin">{estadisticas.promedioAltura.toFixed(2)} m</p>
+              <p className="stat-value-admin">
+                {estadisticas.promedioAltura > 0 ? estadisticas.promedioAltura.toFixed(2) : '0'} m
+              </p>
             </div>
           </section>
-
-          {/* User Management Section */}
-          {activeSection === 'users' && (
-            <section className="management-section">
-              <div className="section-header">
-                <h2 className="section-title-main">Gestión de Usuarios</h2>
-                <div className="section-actions">
-                  <button className="btn-secondary-admin" onClick={cargarDatos}>
-                    <span className="material-icons">refresh</span>
-                    Actualizar
-                  </button>
-                </div>
-              </div>
-
-              <div className="search-bar">
-                <span className="material-icons search-icon">search</span>
-                <input 
-                  type="text" 
-                  placeholder="Buscar por nombre, correo o usuario..."
-                  className="search-input"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              <div className="table-container">
-                {loading ? (
-                  <div className="loading-state">Cargando usuarios...</div>
-                ) : usuariosFiltrados.length === 0 ? (
-                  <div className="empty-state-admin">
-                    <span className="material-icons empty-icon">group</span>
-                    <p>{searchTerm ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}</p>
-                  </div>
-                ) : (
-                  <table className="users-table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Usuario</th>
-                        <th>Correo</th>
-                        <th>Peso</th>
-                        <th>Altura</th>
-                        <th>Rol</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {usuariosFiltrados.map((usuario) => (
-                        <tr key={usuario.id}>
-                          <td>{usuario.id}</td>
-                          <td>{usuario.nombre} {usuario.apellido}</td>
-                          <td>@{usuario.usuario}</td>
-                          <td>{usuario.correo}</td>
-                          <td>{usuario.peso} kg</td>
-                          <td>{usuario.altura} m</td>
-                          <td>
-                            <span className={`badge badge-${usuario.rol?.toLowerCase()}`}>
-                              {usuario.rol}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="action-buttons">
-                              <button 
-                                className="btn-action edit"
-                                title="Cambiar rol"
-                                onClick={() => {
-                                  const nuevoRol = usuario.rol === 'USUARIO' ? 'ENTRENADOR' : 'USUARIO';
-                                  handleCambiarRol(usuario.correo, nuevoRol);
-                                }}
-                              >
-                                <span className="material-icons">swap_horiz</span>
-                              </button>
-                              <button 
-                                className="btn-action delete"
-                                title="Eliminar"
-                                onClick={() => handleEliminarUsuario(usuario.correo)}
-                              >
-                                <span className="material-icons">delete</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </section>
-          )}
 
           {/* Dashboard Overview */}
           {activeSection === 'dashboard' && (
@@ -370,8 +305,9 @@ const AdminDashboard = () => {
                   <div className="dashboard-card-content">
                     <h3>Usuarios</h3>
                     <p>Gestionar usuarios del sistema</p>
-                    <p className="card-stat">{estadisticas.totalUsuarios} registrados</p>
-                    <button onClick={() => setActiveSection('users')} className="card-action-btn">
+                    <p className="card-stat">{estadisticas.usuarios || 0} usuarios</p>
+                    <p className="card-stat">{estadisticas.administradores || 0} administradores</p>
+                    <button onClick={() => navigate('/admin/usuarios')} className="card-action-btn">
                       Ver más →
                     </button>
                   </div>
@@ -413,9 +349,20 @@ const AdminDashboard = () => {
               <h2 className="section-title-main">Estadísticas del Sistema</h2>
               <div className="stats-grid">
                 <div className="stat-card-large">
-                  <h3>Usuarios Registrados</h3>
-                  <p className="stat-large-value">{estadisticas.totalUsuarios}</p>
-                  <p className="stat-subtitle">Total de usuarios en el sistema</p>
+                  <h3>Total de Usuarios</h3>
+                  <p className="stat-large-value">{estadisticas.total || 0}</p>
+                  <div className="stat-breakdown">
+                    <p>{estadisticas.usuarios || 0} Usuarios regulares</p>
+                    <p>{estadisticas.administradores || 0} Administradores</p>
+                  </div>
+                </div>
+
+                <div className="stat-card-large">
+                  <h3>Promedios Físicos</h3>
+                  <div className="stat-breakdown">
+                    <p>Peso: {estadisticas.promedioPeso > 0 ? estadisticas.promedioPeso.toFixed(1) : '0'} kg</p>
+                    <p>Altura: {estadisticas.promedioAltura > 0 ? estadisticas.promedioAltura.toFixed(2) : '0'} m</p>
+                  </div>
                 </div>
               </div>
             </section>
