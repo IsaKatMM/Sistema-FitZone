@@ -3,7 +3,9 @@ package sistema_FitSIL.GestionUsuarios.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
+import sistema_FitSIL.GestionUsuarios.model.Rol;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
 import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
@@ -19,76 +21,101 @@ public class AdministradorService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
- 
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 🆕 Login de administrador
+    // 🔐 LOGIN ADMIN (CORREGIDO)
     public Optional<Administrador> login(String correo, String contrasenia) {
-        Optional<Administrador> adminOpt = adminRepository.buscarPorEmail(correo);
-        
-        if (adminOpt.isPresent()) {
-            Administrador admin = adminOpt.get();
-            // Verificar contraseña encriptada
-            if (passwordEncoder.matches(contrasenia, admin.getContrasenia())) {
-                return Optional.of(admin);
-            }
+        return adminRepository.findByCorreo(correo)  // ✅ Buscar en adminRepository
+                .filter(admin ->
+                        passwordEncoder.matches(contrasenia, admin.getContrasenia())
+                );
+    }
+
+    // ➕ REGISTRAR ADMIN
+    public Administrador registrarAdmin(Administrador admin) {
+        // Verificar si el correo ya existe
+        if (adminRepository.findByCorreo(admin.getCorreo()).isPresent()) {
+            throw new RuntimeException("El correo ya está registrado");
         }
         
-        return Optional.empty();
+        admin.setRol(Rol.ADMINISTRADOR);
+        return adminRepository.save(admin);
     }
 
-    // Crear administrador
-    public Administrador registrarAdmin(Administrador admin) {
-        return adminRepository.guardar(admin);
-    }
+    // ✏️ ACTUALIZAR ADMIN
+    public Administrador actualizarAdmin(String correo, Administrador datos) {
 
-    // Actualizar administrador
-    public Administrador actualizarAdmin(String email, Administrador datos) {
-        Administrador existente = adminRepository.buscarPorEmail(email)
+        Administrador admin = adminRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
 
-        if (datos.getNombre() != null) existente.setNombre(datos.getNombre());
-        if (datos.getDepartamento() != null) existente.setDepartamento(datos.getDepartamento());
-        if (datos.getCodigoAdmin() != 0) existente.setCodigoAdmin(datos.getCodigoAdmin());
-        if (datos.getContrasenia() != null) existente.setContrasenia(datos.getContrasenia());
+        if (datos.getNombre() != null && !datos.getNombre().isEmpty())
+            admin.setNombre(datos.getNombre());
 
-        return adminRepository.guardar(existente);
-    }
+        if (datos.getApellido() != null && !datos.getApellido().isEmpty())
+            admin.setApellido(datos.getApellido());
 
-    // Eliminar administrador
-    public void eliminarAdmin(String email) {
-        if (adminRepository.buscarPorEmail(email).isPresent()) {
-            adminRepository.eliminar(email);
-        } else {
-            throw new RuntimeException("Administrador no encontrado: " + email);
+        if (datos.getTelefono() != null && !datos.getTelefono().isEmpty())
+            admin.setTelefono(datos.getTelefono());
+
+        if (datos.getDepartamento() != null && !datos.getDepartamento().isEmpty())
+            admin.setDepartamento(datos.getDepartamento());
+
+        // ✅ Solo encriptar si se proporciona nueva contraseña
+        if (datos.getContrasenia() != null && !datos.getContrasenia().isEmpty()) {
+            admin.setContrasenia(
+                    passwordEncoder.encode(datos.getContrasenia())
+            );
         }
+
+        return adminRepository.save(admin);
     }
 
-    // Gestionar usuarios
+    // 🗑️ ELIMINAR ADMIN
+    public void eliminarAdmin(String correo) {
+        Administrador admin = adminRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+        adminRepository.delete(admin);
+    }
+
+    // 👥 LISTAR USUARIOS
     public List<Usuario> listarUsuarios() {
-        return adminRepository.listarUsuarios();
+        return usuarioRepository.findAll();
     }
 
-    // Cambiar rol de usuario
-    public Usuario cambiarRol(String email, String rol) {
-        return adminRepository.cambiarRol(email, rol);
+    // 🔄 CAMBIAR ROL
+    public Usuario cambiarRol(String correo, String rol) {
+
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setRol(Rol.valueOf(rol));
+        return usuarioRepository.save(usuario);
     }
 
-    // Consultar estadísticas globales
+    // 🗑️ ELIMINAR USUARIO
+    public void eliminarUsuario(String correo) {
+
+        Usuario usuario = usuarioRepository.findByCorreo(correo)
+                .orElseThrow(() ->
+                        new RuntimeException("Usuario no encontrado: " + correo)
+                );
+
+        usuarioRepository.delete(usuario);
+    }
+
+    // 📊 ESTADÍSTICAS
     public String estadisticas() {
-        return adminRepository.estadisticas();
-    }
 
-     // 🆕 Eliminar usuario
-    public void eliminarUsuario(String email) {
-        Usuario usuario = usuarioRepository.buscarPorEmail(email) // 👈 USAR buscarPorEmail()
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + email));
-        
-        usuarioRepository.eliminar(email); // 👈 USAR eliminar() en lugar de delete()
-        System.out.println("✅ Usuario eliminado: " + email);
+        long totalUsuarios = usuarioRepository.count();
+        long totalAdmins = adminRepository.count();
+
+        return String.format(
+                "{\"total\":%d,\"administradores\":%d,\"usuarios\":%d}",
+                totalUsuarios + totalAdmins,
+                totalAdmins,
+                totalUsuarios
+        );
     }
-    
 }

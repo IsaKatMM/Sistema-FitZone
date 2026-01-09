@@ -1,18 +1,13 @@
 package sistema_FitSIL.GestionUsuarios.service;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sistema_FitSIL.GestionUsuarios.model.Rol;
 import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
-import sistema_FitSIL.GestionUsuarios.util.Sanitizer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class UsuarioService {
@@ -21,12 +16,7 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
 
-
-    // Map para controlar intentos fallidos
-    private final Map<String, Integer> intentosFallidos = new HashMap<>();
-    private static final int MAX_INTENTOS = 5;
-
-     public UsuarioService(UsuarioRepository usuarioRepo,
+    public UsuarioService(UsuarioRepository usuarioRepo,
                           PasswordEncoder passwordEncoder,
                           Validator validator) {
         this.usuarioRepo = usuarioRepo;
@@ -34,68 +24,58 @@ public class UsuarioService {
         this.validator = validator;
     }
 
-     public Usuario registrarUsuario(Usuario usuario) {
-        // 1) Sanitizar campos que aceptan texto libre
-        usuario.setNombre(Sanitizer.sanitize(usuario.getNombre()));
-        usuario.setApellido(Sanitizer.sanitize(usuario.getApellido()));
-        usuario.setUsuario(Sanitizer.sanitize(usuario.getUsuario()));
-
-        // 2) Validación programática (Bean Validation)
-        Set<ConstraintViolation<Usuario>> violations = validator.validate(usuario);
-        if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
+    public Usuario registrarUsuario(Usuario usuario) {
+        // ❌ QUITÉ ESTO - Ya viene encriptada del Controller
+        // usuario.setContrasenia(passwordEncoder.encode(usuario.getContrasenia()));
+        
+        // Verificar si el correo ya existe
+        if (usuarioRepo.findByCorreo(usuario.getCorreo()).isPresent()) {
+            throw new RuntimeException("El correo ya está registrado");
         }
-
-        // 3) Codificar contraseña
-        usuario.setContrasenia(passwordEncoder.encode(usuario.getContrasenia()));
-
-        // 4) Persistir (repositorio)
-        return usuarioRepo.guardar(usuario);
+        
+        usuario.setRol(Rol.USUARIO); // Asegurar que sea USUARIO
+        return usuarioRepo.save(usuario);
     }
 
-      public Optional<Usuario> login(String correo, String contrasenia) {
-        int intentos = intentosFallidos.getOrDefault(correo, 0);
-
-        // Verificar si está bloqueado
-        if (intentos >= MAX_INTENTOS) {
-            throw new RuntimeException("Usuario bloqueado por " + MAX_INTENTOS + " intentos fallidos");
-        }
-
-        Optional<Usuario> opt = usuarioRepo.buscarPorEmail(correo);
-
-        if (opt.isPresent() && passwordEncoder.matches(contrasenia, opt.get().getContrasenia())) {
-            // Login exitoso -> resetear contador
-            intentosFallidos.put(correo, 0);
-            return opt;
-        } else {
-            // Incrementar intentos fallidos
-            intentosFallidos.put(correo, intentos + 1);
-            int restantes = MAX_INTENTOS - (intentos + 1);
-            if (restantes > 0) {
-                throw new RuntimeException("Contraseña incorrecta. Te quedan " + restantes + " intentos");
-            } else {
-                throw new RuntimeException("Usuario bloqueado por " + MAX_INTENTOS + " intentos fallidos");
-            }
-        }
+    public Optional<Usuario> login(String correo, String contrasenia) {
+        return usuarioRepo.findByCorreo(correo)
+                .filter(u -> passwordEncoder.matches(contrasenia, u.getContrasenia()));
     }
-
 
     public Optional<Usuario> obtenerPerfil(String correo) {
-        return usuarioRepo.buscarPorEmail(correo);
+        return usuarioRepo.findByCorreo(correo);
     }
 
     public Usuario actualizarPerfil(String correo, Usuario datos) {
-        Usuario u = usuarioRepo.buscarPorEmail(correo).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        // Solo actualizamos campos permitidos, sanitizados en la entidad
-        u.setNombre(datos.getNombre());
-        u.setApellido(datos.getApellido());
-        u.setTelefono(datos.getTelefono());
-        u.setPeso(datos.getPeso());
-        u.setAltura(datos.getAltura());
-        return usuarioRepo.actualizar(u);
+        Usuario u = usuarioRepo.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (datos.getNombre() != null)
+            u.setNombre(datos.getNombre());
+        
+        if (datos.getApellido() != null)
+            u.setApellido(datos.getApellido());
+        
+        if (datos.getTelefono() != null)
+            u.setTelefono(datos.getTelefono());
+        
+        if (datos.getPeso() > 0)
+            u.setPeso(datos.getPeso());
+        
+        if (datos.getAltura() > 0)
+            u.setAltura(datos.getAltura());
+
+        // ✅ Solo encriptar si se proporciona nueva contraseña
+        if (datos.getContrasenia() != null && !datos.getContrasenia().isEmpty()) {
+            u.setContrasenia(passwordEncoder.encode(datos.getContrasenia()));
+        }
+
+        return usuarioRepo.save(u);
     }
 
     public void eliminarUsuario(String correo) {
-        usuarioRepo.eliminar(correo);
+        Usuario u = usuarioRepo.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuarioRepo.delete(u);
     }
 }

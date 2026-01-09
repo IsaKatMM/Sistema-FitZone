@@ -5,6 +5,7 @@ import sistema_FitSIL.GestionUsuarios.service.UsuarioService;
 import sistema_FitSIL.GestionUsuarios.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +13,7 @@ import jakarta.validation.Valid;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.HashMap;
-
-import sistema_FitSIL.GestionUsuarios.util.Sanitizer;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -28,9 +26,12 @@ public class UsuarioController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // Registro de usuario
     @PostMapping("/registro")
-    public ResponseEntity<Usuario> registrar(
+    public ResponseEntity<?> registrar(
             @Valid @RequestBody Usuario usuario,
             BindingResult bindingResult) {
 
@@ -38,8 +39,14 @@ public class UsuarioController {
             String mensaje = bindingResult.getAllErrors()
                     .get(0)
                     .getDefaultMessage();
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", mensaje));
         }
+
+        // ✅ Encriptar AQUÍ en el controller
+        usuario.setContrasenia(
+                passwordEncoder.encode(usuario.getContrasenia())
+        );
 
         Usuario nuevo = usuarioService.registrarUsuario(usuario);
         return ResponseEntity.status(201).body(nuevo);
@@ -48,16 +55,28 @@ public class UsuarioController {
     // Login
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody Usuario usuario) {
-        Optional<Usuario> logeado = usuarioService.login(usuario.getCorreo(), usuario.getContrasenia());
+        Optional<Usuario> logeado = usuarioService.login(
+                usuario.getCorreo(), 
+                usuario.getContrasenia()
+        );
+        
         if (logeado.isPresent()) {
             Usuario u = logeado.get();
-            String token = jwtService.generarToken(u.getCorreo(), u.getRol().toString());
+            String token = jwtService.generarToken(
+                    u.getCorreo(), 
+                    u.getRol().toString()
+            );
+            
             Map<String, Object> respuesta = new HashMap<>();
             respuesta.put("usuario", u);
+            respuesta.put("correo", u.getCorreo());
+            respuesta.put("rol", u.getRol().name());
             respuesta.put("token", token);
+            
             return ResponseEntity.ok(respuesta);
         } else {
-            return ResponseEntity.status(401).body("Credenciales inválidas");
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "Credenciales inválidas"));
         }
     }
 

@@ -20,7 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import sistema_FitSIL.GestionUsuarios.security.JwtAuthFilter;
-import sistema_FitSIL.GestionUsuarios.service.JsonUserDetailsService;
+import sistema_FitSIL.GestionUsuarios.service.DbUserDetailsService;
 
 @Configuration
 @EnableMethodSecurity
@@ -30,7 +30,7 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     @Autowired
-    private JsonUserDetailsService userDetailsService;
+    private DbUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,21 +38,27 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                // ✅ RUTAS PÚBLICAS (sin autenticación)
                 .requestMatchers(
+                    "/auth/login",
                     "/usuarios/registro",
                     "/usuarios/login",
-                    "/auth/login",
                     "/administradores/registro",
-                    "/administradores/login"
+                    "/administradores/login",
+                    "/ejercicios/obtener",    // ✅ Ver ejercicios - público
+                    "/ejercicios/buscar"      // ✅ Buscar ejercicios - público
                 ).permitAll()
-                
-                //endpoints de admin-requiere autenticacion
-                .requestMatchers("/administradores/**").authenticated()
 
+                // ✅ RUTAS DE ADMINISTRADOR (requieren autenticación + rol ADMIN)
+                .requestMatchers(
+                    "/administradores/**",
+                    "/ejercicios/guardar"     // ✅ Solo admins pueden crear/editar
+                ).authenticated()
 
+                // ✅ RESTO DE RUTAS (requieren autenticación)
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> 
+            .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -81,9 +87,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://fitsil-front.app", "http://localhost:3000"));
+        config.setAllowedOrigins(List.of(
+            "http://localhost:3000",
+            "http://localhost:5173"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

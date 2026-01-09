@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sistema_FitSIL.GestionUsuarios.service.JsonUserDetailsService;
+import sistema_FitSIL.GestionUsuarios.service.MyUserDetailsService;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,15 +23,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private JwtService jwtService;
 
     @Autowired
-    private JsonUserDetailsService userDetailsService;
+    private MyUserDetailsService userDetailsService;
 
-    // ✅ Rutas públicas
+    // ✅ Rutas públicas (no requieren token)
     private static final List<String> PUBLIC_PATHS = List.of(
         "/usuarios/registro",
         "/usuarios/login",
         "/administradores/registro",
         "/administradores/login",
-        "/auth/login"
+        "/auth/login",
+        "/ejercicios/obtener",
+        "/ejercicios/buscar"
     );
 
     @Override
@@ -41,8 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
-        
-        // ✅ Si es ruta pública, saltar validación JWT
+
+        // ✅ Rutas públicas → no validar JWT
         if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
             filterChain.doFilter(request, response);
             return;
@@ -60,6 +62,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String correo = jwtService.obtenerCorreoDesdeToken(token);
 
             if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
                 UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
 
                 if (jwtService.validarToken(token, correo)) {
@@ -70,12 +73,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities()
                         );
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error en JWT Filter: " + e.getMessage());
+            System.err.println("❌ Error en JwtAuthFilter: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

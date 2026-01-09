@@ -1,15 +1,15 @@
 package sistema_FitSIL.GestionUsuarios.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import sistema_FitSIL.GestionUsuarios.model.Administrador;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import sistema_FitSIL.GestionUsuarios.model.Persona;
+import sistema_FitSIL.GestionUsuarios.model.Usuario;
+import sistema_FitSIL.GestionUsuarios.model.Administrador;
+import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
 import sistema_FitSIL.GestionUsuarios.security.JwtService;
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.Optional;
 public class AuthController {
 
     @Autowired
-    private JwtService jwtService;
+    private UsuarioRepository usuarioRepo;
 
     @Autowired
     private AdministradorRepository adminRepo;
@@ -29,43 +29,60 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    /**
-     * 🔐 Endpoint para autenticar administradores y generar un JWT válido.
-     * Se espera un JSON con "correo" y "contrasenia" en el body.
-     */
+    @Autowired
+    private JwtService jwtService;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+
         String correo = body.get("correo");
         String contrasenia = body.get("contrasenia");
 
         if (correo == null || contrasenia == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Debe ingresar correo y contraseña"));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Correo y contraseña son obligatorios"));
         }
 
-        // Buscar administrador en la base de datos MySQL
-        Optional<Administrador> adminOpt = adminRepo.buscarPorEmail(correo);
-        if (adminOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Usuario no encontrado"));
+        // 🔍 BUSCAR EN AMBAS TABLAS
+        Persona persona = null;
+        
+        // Primero buscar en Usuario
+        Optional<Usuario> usuarioOpt = usuarioRepo.findByCorreo(correo);
+        if (usuarioOpt.isPresent()) {
+            persona = usuarioOpt.get();
+        } else {
+            // Si no es Usuario, buscar en Administrador
+            Optional<Administrador> adminOpt = adminRepo.findByCorreo(correo);
+            if (adminOpt.isPresent()) {
+                persona = adminOpt.get();
+            }
         }
 
-        Administrador admin = adminOpt.get();
-
-        // Validar contraseña con BCrypt
-        if (!passwordEncoder.matches(contrasenia, admin.getContrasenia())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Contraseña incorrecta"));
+        // Si no se encontró en ninguna tabla
+        if (persona == null) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "Credenciales inválidas"));
         }
 
-        // ✅ Generar token JWT válido incluyendo el rol del administrador
-        String token = jwtService.generarToken(correo, admin.getRol().name());
+        // 🔐 VERIFICAR CONTRASEÑA
+        if (!passwordEncoder.matches(contrasenia, persona.getContrasenia())) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "Credenciales inválidas"));
+        }
 
+        // ✅ GENERAR TOKEN
+        String token = jwtService.generarToken(
+                persona.getCorreo(),
+                persona.getRol().name()
+        );
+
+        // ✅ RESPUESTA CONSISTENTE con el frontend
         Map<String, Object> response = new HashMap<>();
-        response.put("mensaje", "Inicio de sesión exitoso");
-        response.put("correo", correo);
-        response.put("rol", admin.getRol().toString());
+        response.put("correo", persona.getCorreo());
+        response.put("rol", persona.getRol().name());
         response.put("token", token);
+        response.put("nombre", persona.getNombre());
+        response.put("usuario", persona); // Para compatibilidad
 
         return ResponseEntity.ok(response);
     }
