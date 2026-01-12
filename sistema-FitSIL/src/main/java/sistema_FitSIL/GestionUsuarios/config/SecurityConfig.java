@@ -38,24 +38,98 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                // ========================================
                 // ✅ RUTAS PÚBLICAS (sin autenticación)
+                // ========================================
                 .requestMatchers(
                     "/auth/login",
                     "/usuarios/registro",
                     "/usuarios/login",
                     "/administradores/registro",
                     "/administradores/login",
-                    "/ejercicios/obtener",    // ✅ Ver ejercicios - público
-                    "/ejercicios/buscar"      // ✅ Buscar ejercicios - público
+                    "/ejercicios/obtener",
+                    "/ejercicios/buscar",
+                    "/ejercicios/imagen/**"
                 ).permitAll()
 
-                // ✅ RUTAS DE ADMINISTRADOR (requieren autenticación + rol ADMIN)
+                // ========================================
+                // ✅ RUTAS DE EJERCICIOS (solo admin puede modificar)
+                // ========================================
                 .requestMatchers(
-                    "/administradores/**",
-                    "/ejercicios/guardar"     // ✅ Solo admins pueden crear/editar
+                    "/ejercicios/guardar",
+                    "/ejercicios/actualizar/**",
+                    "/ejercicios/eliminar/**"
+                ).hasAuthority("ROLE_ADMINISTRADOR")
+
+                // ========================================
+                // ✅ RUTAS DE REPORTES - ADMIN (solo administradores)
+                // ========================================
+                .requestMatchers(
+                    "/api/reportes-admin",
+                    "/api/reportes-admin/**"
+                ).hasAuthority("ROLE_ADMINISTRADOR")
+
+                // ========================================
+                // ✅ RUTAS DE NOTIFICACIONES - ADMIN (solo administradores)
+                // ========================================
+                .requestMatchers(
+                    "/api/admin/notificaciones",          // ✅ CAMBIADO
+                    "/api/admin/notificaciones/**"        // ✅ CAMBIADO
+                ).hasAuthority("ROLE_ADMINISTRADOR")
+
+                // ========================================
+                // ✅ RUTAS DE NOTIFICACIONES - USUARIOS (usuarios autenticados)
+                // ========================================
+                .requestMatchers(
+                    "/api/notificaciones-usuario",
+                    "/api/notificaciones-usuario/**"
                 ).authenticated()
 
-                // ✅ RESTO DE RUTAS (requieren autenticación)
+                // ========================================
+                // ✅ RUTAS DE REPORTES PERSONALES (usuarios autenticados)
+                // ========================================
+                .requestMatchers(
+                    "/api/reportes/mensual",
+                    "/api/reportes/semanal",
+                    "/api/reportes/calorias",
+                    "/api/reportes/historial",
+                    "/api/reportes/descargar/**"
+                ).authenticated()
+
+                // ========================================
+                // ✅ RUTAS DE USUARIOS (propietario o admin)
+                // ========================================
+                .requestMatchers(
+                    "/usuarios/**"
+                ).authenticated()
+
+                // ========================================
+                // ✅ RUTAS DE ESTADÍSTICAS (usuarios autenticados)
+                // ========================================
+                .requestMatchers(
+                    "/estadisticas/**",
+                    "/api/estadisticas/**"
+                ).authenticated()
+
+                // ========================================
+                // ✅ RUTAS DE RUTINAS (usuarios autenticados)
+                // ========================================
+                .requestMatchers(
+                    "/rutinas/**",
+                    "/api/rutinas/**"
+                ).authenticated()
+
+                // ========================================
+                // ✅ RUTAS DE ADMINISTRADOR (solo administradores)
+                // Las rutas /administradores/** que YA EXISTEN
+                // ========================================
+                .requestMatchers(
+                    "/administradores/**"
+                ).hasAuthority("ROLE_ADMINISTRADOR")
+
+                // ========================================
+                // ✅ CUALQUIER OTRA RUTA requiere autenticación
+                // ========================================
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->
@@ -92,8 +166,9 @@ public class SecurityConfig {
             "http://localhost:5173"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setAllowCredentials(false);
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

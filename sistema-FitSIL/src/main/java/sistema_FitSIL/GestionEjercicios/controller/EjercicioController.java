@@ -1,23 +1,18 @@
 package sistema_FitSIL.GestionEjercicios.controller;
 
+import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import sistema_FitSIL.GestionEjercicios.model.Ejercicio;
@@ -29,14 +24,28 @@ import sistema_FitSIL.GestionEjercicios.service.EjercicioService;
 public class EjercicioController {
 
     private final EjercicioService ejercicioService;
+    
+    @Value("${app.imagenes.path:imagenes_ejercicios/}")
+    private String carpetaImagenes;
 
     public EjercicioController(EjercicioService ejercicioService) {
         this.ejercicioService = ejercicioService;
     }
+    
+    private void crearCarpetaSiNoExiste() {
+        File carpeta = new File(carpetaImagenes);
+        if (!carpeta.exists()) {
+            boolean creada = carpeta.mkdirs();
+            if (creada) {
+                System.out.println("✅ Carpeta creada: " + carpeta.getAbsolutePath());
+            } else {
+                System.err.println("❌ No se pudo crear la carpeta: " + carpeta.getAbsolutePath());
+            }
+        } else {
+            System.out.println("📁 Usando carpeta: " + carpeta.getAbsolutePath());
+        }
+    }
 
-    // ============================================
-    // CREAR - Solo Admin
-    // ============================================
     @PostMapping("/guardar")
     public ResponseEntity<?> guardarEjercicio(
             @RequestParam String nombre,
@@ -51,8 +60,11 @@ public class EjercicioController {
 
         if (!isAdmin) {
             return ResponseEntity.status(403)
-                    .body(Map.of("error", "Acceso denegado: solo administradores pueden crear ejercicios"));
+                    .body(Map.of("error", "Acceso denegado"));
         }
+
+        // Asegurar que la carpeta existe
+        crearCarpetaSiNoExiste();
 
         Ejercicio ejercicio = new Ejercicio();
         ejercicio.setNombre(nombre);
@@ -61,16 +73,24 @@ public class EjercicioController {
 
         if (imagen != null && !imagen.isEmpty()) {
             try {
-                String carpeta = "imagenes_ejercicios/";
-                String nombreArchivo = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
-                Path rutaArchivo = Paths.get(carpeta + nombreArchivo);
-                Files.createDirectories(rutaArchivo.getParent());
-                imagen.transferTo(rutaArchivo.toFile());
+                String extension = obtenerExtension(imagen.getOriginalFilename());
+                String nombreArchivo = System.currentTimeMillis() + "_" + 
+                                     nombre.replaceAll("[^a-zA-Z0-9]", "_") + extension;
+                
+                File carpeta = new File(carpetaImagenes);
+                File archivoDestino = new File(carpeta, nombreArchivo);
+                
+                // Guardar el archivo
+                imagen.transferTo(archivoDestino);
 
-                ejercicio.setImagenUrl(rutaArchivo.toString());
+                // Guardar solo el nombre del archivo en la BD
+                ejercicio.setImagenUrl(nombreArchivo);
+                
+                System.out.println("✅ Imagen guardada en: " + archivoDestino.getAbsolutePath());
             } catch (Exception e) {
+                e.printStackTrace();
                 return ResponseEntity.status(500)
-                        .body(Map.of("error", "Error al guardar la imagen: " + e.getMessage()));
+                        .body(Map.of("error", "Error al guardar imagen: " + e.getMessage()));
             }
         }
 
@@ -78,9 +98,6 @@ public class EjercicioController {
         return ResponseEntity.ok(guardado);
     }
 
-    // ============================================
-    // ACTUALIZAR - Solo Admin
-    // ============================================
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<?> actualizarEjercicio(
             @PathVariable Integer id,
@@ -96,7 +113,7 @@ public class EjercicioController {
 
         if (!isAdmin) {
             return ResponseEntity.status(403)
-                    .body(Map.of("error", "Acceso denegado: solo administradores pueden actualizar ejercicios"));
+                    .body(Map.of("error", "Acceso denegado"));
         }
 
         Ejercicio ejercicio = ejercicioService.obtenerEjercicioPorId(id);
@@ -109,26 +126,32 @@ public class EjercicioController {
         ejercicio.setDescripcion(descripcion);
         ejercicio.setMusculoTrabajado(musculoTrabajado);
 
-        // Si se envió una nueva imagen, actualizarla
         if (imagen != null && !imagen.isEmpty()) {
             try {
-                // Eliminar imagen anterior si existe
+                // Eliminar imagen anterior
                 if (ejercicio.getImagenUrl() != null) {
-                    Path imagenAnterior = Paths.get(ejercicio.getImagenUrl());
-                    Files.deleteIfExists(imagenAnterior);
+                    eliminarImagenAnterior(ejercicio.getImagenUrl());
                 }
 
-                // Guardar nueva imagen
-                String carpeta = "imagenes_ejercicios/";
-                String nombreArchivo = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
-                Path rutaArchivo = Paths.get(carpeta + nombreArchivo);
-                Files.createDirectories(rutaArchivo.getParent());
-                imagen.transferTo(rutaArchivo.toFile());
+                // Asegurar que la carpeta existe
+                crearCarpetaSiNoExiste();
 
-                ejercicio.setImagenUrl(rutaArchivo.toString());
+                // Guardar nueva imagen
+                String extension = obtenerExtension(imagen.getOriginalFilename());
+                String nombreArchivo = System.currentTimeMillis() + "_" + 
+                                     nombre.replaceAll("[^a-zA-Z0-9]", "_") + extension;
+                
+                File carpeta = new File(carpetaImagenes);
+                File archivoDestino = new File(carpeta, nombreArchivo);
+                
+                imagen.transferTo(archivoDestino);
+                ejercicio.setImagenUrl(nombreArchivo);
+                
+                System.out.println("✅ Imagen actualizada: " + archivoDestino.getAbsolutePath());
             } catch (Exception e) {
+                e.printStackTrace();
                 return ResponseEntity.status(500)
-                        .body(Map.of("error", "Error al actualizar la imagen: " + e.getMessage()));
+                        .body(Map.of("error", "Error al actualizar imagen: " + e.getMessage()));
             }
         }
 
@@ -136,9 +159,6 @@ public class EjercicioController {
         return ResponseEntity.ok(actualizado);
     }
 
-    // ============================================
-    // ELIMINAR - Solo Admin
-    // ============================================
     @DeleteMapping("/eliminar/{id}")
     public ResponseEntity<?> eliminarEjercicio(
             @PathVariable Integer id,
@@ -150,7 +170,7 @@ public class EjercicioController {
 
         if (!isAdmin) {
             return ResponseEntity.status(403)
-                    .body(Map.of("error", "Acceso denegado: solo administradores pueden eliminar ejercicios"));
+                    .body(Map.of("error", "Acceso denegado"));
         }
 
         Ejercicio ejercicio = ejercicioService.obtenerEjercicioPorId(id);
@@ -159,36 +179,23 @@ public class EjercicioController {
                     .body(Map.of("error", "Ejercicio no encontrado"));
         }
 
-        // Eliminar imagen si existe
-        try {
-            if (ejercicio.getImagenUrl() != null) {
-                Path imagenPath = Paths.get(ejercicio.getImagenUrl());
-                Files.deleteIfExists(imagenPath);
-            }
-        } catch (Exception e) {
-            System.err.println("Error al eliminar imagen: " + e.getMessage());
+        if (ejercicio.getImagenUrl() != null) {
+            eliminarImagenAnterior(ejercicio.getImagenUrl());
         }
 
         ejercicioService.eliminarEjercicio(id);
         
-        // Devolver JSON en lugar de texto plano
         return ResponseEntity.ok(Map.of(
             "mensaje", "Ejercicio eliminado exitosamente",
             "id", id
         ));
     }
 
-    // ============================================
-    // OBTENER TODOS - Todos pueden ver
-    // ============================================
     @GetMapping("/obtener")
     public List<Ejercicio> obtenerTodosLosEjercicios() {
         return ejercicioService.obtenerTodosLosEjercicios();
     }
 
-    // ============================================
-    // BUSCAR POR NOMBRE - Todos pueden ver
-    // ============================================
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarPorNombre(@RequestParam String nombre) {
         Ejercicio ejercicio = ejercicioService.buscarPorNombre(nombre);
@@ -197,5 +204,53 @@ public class EjercicioController {
                     .body(Map.of("error", "Ejercicio no encontrado"));
         }
         return ResponseEntity.ok(ejercicio);
+    }
+    
+    @GetMapping("/imagen/{nombreArchivo}")
+    public ResponseEntity<byte[]> obtenerImagen(@PathVariable String nombreArchivo) {
+        try {
+            File archivo = new File(carpetaImagenes, nombreArchivo);
+            
+            if (!archivo.exists()) {
+                System.err.println("❌ Imagen no encontrada: " + archivo.getAbsolutePath());
+                return ResponseEntity.notFound().build();
+            }
+            
+            byte[] imagen = Files.readAllBytes(archivo.toPath());
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(determinarContentType(nombreArchivo)));
+            
+            return new ResponseEntity<>(imagen, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    private String obtenerExtension(String nombreArchivo) {
+        if (nombreArchivo == null || !nombreArchivo.contains(".")) {
+            return ".jpg";
+        }
+        return nombreArchivo.substring(nombreArchivo.lastIndexOf("."));
+    }
+    
+    private String determinarContentType(String nombreArchivo) {
+        String nombre = nombreArchivo.toLowerCase();
+        if (nombre.endsWith(".png")) return "image/png";
+        if (nombre.endsWith(".webp")) return "image/webp";
+        if (nombre.endsWith(".gif")) return "image/gif";
+        return "image/jpeg";
+    }
+
+    private void eliminarImagenAnterior(String nombreArchivo) {
+        try {
+            File archivo = new File(carpetaImagenes, nombreArchivo);
+            if (archivo.exists() && archivo.delete()) {
+                System.out.println("🗑️ Imagen eliminada: " + nombreArchivo);
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al eliminar: " + e.getMessage());
+        }
     }
 }

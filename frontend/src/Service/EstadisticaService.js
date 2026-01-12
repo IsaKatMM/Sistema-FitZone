@@ -1,47 +1,27 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8081/api/estadisticas';
-
-// Obtener el token del localStorage
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+// src/services/EstadisticaService.js
+import api from "../services/api";
 
 export const EstadisticaService = {
-  // Obtener todas las estadísticas del usuario autenticado
+  /**
+   * ✅ Obtener todas las estadísticas del usuario
+   */
   obtenerPorUsuario: async () => {
     try {
-      const response = await axios.get(`${API_URL}/usuario`, {
-        headers: getAuthHeader()
-      });
+      const response = await api.get('/api/estadisticas/usuario');
       return response.data;
     } catch (error) {
-      console.error('Error al obtener estadísticas del usuario:', error);
+      console.error('Error al obtener estadísticas:', error);
       throw error;
     }
   },
 
-  // Obtener estadísticas por rango de tiempo
-  obtenerPorRango: async (rango) => {
-    try {
-      const response = await axios.get(`${API_URL}/usuario/rango`, {
-        params: { rango },
-        headers: getAuthHeader()
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error al obtener estadísticas por rango:', error);
-      throw error;
-    }
-  },
-
-  // Obtener resumen de estadísticas
+  /**
+   * ✅ Obtener resumen por rango
+   */
   obtenerResumen: async (rango = '1M') => {
     try {
-      const response = await axios.get(`${API_URL}/usuario/resumen`, {
-        params: { rango },
-        headers: getAuthHeader()
+      const response = await api.get('/api/estadisticas/usuario/resumen', {
+        params: { rango }
       });
       return response.data;
     } catch (error) {
@@ -50,26 +30,68 @@ export const EstadisticaService = {
     }
   },
 
-  // Obtener promedio de estrés
-  obtenerPromedioEstres: async (rango = '1M') => {
+  /**
+   * ✅ Obtener promedio de estrés
+   */
+  obtenerPromedioEstres: async () => {
     try {
-      const response = await axios.get(`${API_URL}/usuario/promedio-estres`, {
-        params: { rango },
-        headers: getAuthHeader()
+      const response = await api.get('/api/estadisticas/usuario/promedio-estres');
+      return response.data.promedioEstres || 0;
+    } catch (error) {
+      console.error('Error al obtener promedio de estrés:', error);
+      return 0;
+    }
+  },
+
+  /**
+   * ✅ NUEVO: Obtener datos para gráfico semanal
+   */
+  obtenerDatosSemana: async () => {
+    try {
+      const response = await api.get('/api/estadisticas/usuario/semana');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener datos de la semana:', error);
+      return [];
+    }
+  },
+
+  /**
+   * ✅ NUEVO: Obtener datos por categoría
+   */
+  obtenerDatosCategoria: async (rango = '1M') => {
+    try {
+      const response = await api.get('/api/estadisticas/usuario/categoria', {
+        params: { rango }
       });
       return response.data;
     } catch (error) {
-      console.error('Error al obtener promedio de estrés:', error);
+      console.error('Error al obtener datos por categoría:', error);
+      return [];
+    }
+  },
+
+  /**
+   * ✅ NUEVO: Obtener dashboard completo
+   */
+  obtenerDashboard: async (rango = '1M') => {
+    try {
+      const response = await api.get('/api/estadisticas/usuario/dashboard', {
+        params: { rango }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener dashboard:', error);
       throw error;
     }
   },
 
-  // Agregar nueva estadística manualmente
+  /**
+   * ✅ Agregar estadística manualmente
+   */
   agregar: async (estadistica) => {
     try {
-      const response = await axios.post(API_URL, estadistica, {
-        headers: getAuthHeader()
-      });
+      const response = await api.post('/api/estadisticas/agregar', estadistica);
       return response.data;
     } catch (error) {
       console.error('Error al agregar estadística:', error);
@@ -77,85 +99,65 @@ export const EstadisticaService = {
     }
   },
 
-  // Obtener estadísticas agrupadas por semana
-  obtenerPorSemana: async (rango = '1M') => {
+  /**
+   * ✅ Generar estadística (testing)
+   */
+  generar: async (minutos) => {
     try {
-      const response = await axios.get(`${API_URL}/usuario/por-semana`, {
-        params: { rango },
-        headers: getAuthHeader()
+      const response = await api.post('/api/estadisticas/generar', null, {
+        params: { minutos }
       });
       return response.data;
     } catch (error) {
-      console.error('Error al obtener estadísticas por semana:', error);
+      console.error('Error al generar estadística:', error);
       throw error;
     }
   },
 
-  // Funciones auxiliares locales para procesar datos
+  /**
+   * ✅ Eliminar estadística
+   */
+  eliminar: async (id) => {
+    try {
+      const response = await api.delete(`/api/estadisticas/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error al eliminar estadística:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * ✅ Helpers locales para procesar datos
+   */
+  
+  // Calcular total de workouts
   calcularTotalWorkouts: (estadisticas) => {
     return estadisticas.length;
   },
 
+  // Calcular promedio de duración
   calcularPromedioDuracion: (estadisticas) => {
     if (estadisticas.length === 0) return 0;
     const total = estadisticas.reduce((sum, e) => sum + e.minutosEjercicio, 0);
     return Math.round(total / estadisticas.length);
   },
 
+  // Calcular total de calorías
   calcularTotalCalorias: (estadisticas) => {
     return Math.round(estadisticas.reduce((sum, e) => sum + e.caloriasQuemadas, 0));
   },
 
-  // Agrupar estadísticas por día de la semana (últimos 7 días)
-  agruparPorDiaSemana: (estadisticas) => {
-    const hoy = new Date();
-    const diasSemana = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const ultimos7Dias = [];
-
-    for (let i = 6; i >= 0; i--) {
-      const fecha = new Date(hoy);
-      fecha.setDate(hoy.getDate() - i);
-      fecha.setHours(0, 0, 0, 0);
-
-      const estadisticasDia = estadisticas.filter(e => {
-        const fechaEstadistica = new Date(e.fecha);
-        fechaEstadistica.setHours(0, 0, 0, 0);
-        return fechaEstadistica.getTime() === fecha.getTime();
+  // Formatear fecha
+  formatearFecha: (fechaStr) => {
+    try {
+      const fecha = new Date(fechaStr);
+      return fecha.toLocaleDateString('es-ES', { 
+        day: '2-digit', 
+        month: 'short' 
       });
-
-      const totalMinutos = estadisticasDia.reduce((sum, e) => sum + e.minutosEjercicio, 0);
-      
-      ultimos7Dias.push({
-        dia: diasSemana[fecha.getDay()],
-        valor: totalMinutos,
-        fecha: fecha.toISOString()
-      });
+    } catch {
+      return fechaStr;
     }
-
-    return ultimos7Dias;
-  },
-
-  // Obtener datos para gráfico de línea (últimos 30 días)
-  obtenerDatosGraficoLinea: (estadisticas) => {
-    const datosOrdenados = [...estadisticas]
-      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
-      .slice(-30);
-
-    return datosOrdenados.map(e => e.nivelEstres || 0);
-  },
-
-  // Calcular cambio porcentual
-  calcularCambio: (estadisticas, campo) => {
-    if (estadisticas.length < 2) return 0;
-
-    const mitad = Math.floor(estadisticas.length / 2);
-    const primeraMetad = estadisticas.slice(0, mitad);
-    const segundaMetad = estadisticas.slice(mitad);
-
-    const promedioAnterior = primeraMetad.reduce((sum, e) => sum + (e[campo] || 0), 0) / primeraMetad.length;
-    const promedioActual = segundaMetad.reduce((sum, e) => sum + (e[campo] || 0), 0) / segundaMetad.length;
-
-    if (promedioAnterior === 0) return 0;
-    return ((promedioActual - promedioAnterior) / promedioAnterior) * 100;
   }
 };

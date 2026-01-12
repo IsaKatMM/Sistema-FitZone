@@ -4,17 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import authService from '../../services/authService';
 import adminService from '../../services/adminService';
+import notificationService from '../../services/notificationService';
+import reporteService from '../../services/reporteService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { darkMode } = useTheme();
   const [admin, setAdmin] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [activeSection, setActiveSection] = useState('dashboard');
   
   const [usuarios, setUsuarios] = useState([]);
-  const [usuariosFiltrados, setUsuariosFiltrados] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [estadisticas, setEstadisticas] = useState({
     total: 0,
     administradores: 0,
@@ -25,6 +27,22 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [usuariosActivos, setUsuariosActivos] = useState(0);
   
+  // Estados de notificaciones
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [notificacionesNoLeidas, setNotificacionesNoLeidas] = useState(0);
+  
+  // Estados de reportes
+  const [reportes, setReportes] = useState([]);
+  const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [nuevoReporte, setNuevoReporte] = useState({
+    nombre: '',
+    tipo: 'USUARIOS',
+    fechaInicio: '',
+    fechaFin: '',
+    filtros: {}
+  });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,30 +51,37 @@ const AdminDashboard = () => {
       setAdmin(currentUser);
     }
     cargarDatos();
+    cargarNotificaciones();
+    cargarReportes();
+
+    // Suscribirse a cambios en notificaciones
+    const actualizarNotificaciones = () => {
+      cargarNotificaciones();
+    };
+    notificationService.suscribir(actualizarNotificaciones);
+
+    return () => {
+      notificationService.desuscribir(actualizarNotificaciones);
+    };
   }, []);
 
   const cargarDatos = async () => {
     setLoading(true);
     try {
-      // Cargar usuarios
       let usuariosData = [];
       try {
         usuariosData = await adminService.listarUsuarios();
-        console.log('✅ Usuarios cargados:', usuariosData.length);
       } catch (error) {
-        console.error('⚠️ Error al cargar usuarios:', error.response?.status);
+        console.error('Error al cargar usuarios:', error);
       }
       
-      // Cargar estadísticas del backend
       let statsData = { total: 0, administradores: 0, usuarios: 0 };
       try {
         statsData = await adminService.obtenerEstadisticas();
-        console.log('✅ Estadísticas del backend:', statsData);
       } catch (error) {
-        console.error('⚠️ Error al cargar estadísticas:', error);
+        console.error('Error al cargar estadísticas:', error);
       }
       
-      // ✅ CALCULAR PROMEDIOS LOCALMENTE
       let promedioPeso = 0;
       let promedioAltura = 0;
       
@@ -65,18 +90,15 @@ const AdminDashboard = () => {
         const usuariosConAltura = usuariosData.filter(u => u.altura && u.altura > 0);
         
         if (usuariosConPeso.length > 0) {
-          const totalPeso = usuariosConPeso.reduce((sum, u) => sum + u.peso, 0);
-          promedioPeso = totalPeso / usuariosConPeso.length;
+          promedioPeso = usuariosConPeso.reduce((sum, u) => sum + u.peso, 0) / usuariosConPeso.length;
         }
         
         if (usuariosConAltura.length > 0) {
-          const totalAltura = usuariosConAltura.reduce((sum, u) => sum + u.altura, 0);
-          promedioAltura = totalAltura / usuariosConAltura.length;
+          promedioAltura = usuariosConAltura.reduce((sum, u) => sum + u.altura, 0) / usuariosConAltura.length;
         }
       }
       
       setUsuarios(usuariosData);
-      setUsuariosFiltrados(usuariosData);
       setEstadisticas({
         ...statsData,
         promedioPeso,
@@ -85,37 +107,105 @@ const AdminDashboard = () => {
       setUsuariosActivos(adminService.calcularUsuariosActivos(usuariosData));
       
     } catch (error) {
-      console.error('❌ Error general al cargar datos:', error);
-      alert('Error al cargar los datos del sistema.');
+      console.error('Error al cargar datos:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const resultados = adminService.buscarUsuarios(usuarios, searchTerm);
-    setUsuariosFiltrados(resultados);
-  }, [searchTerm, usuarios]);
+  const cargarNotificaciones = async () => {
+    try {
+      const notifs = await notificationService.obtenerNotificaciones();
+      setNotificaciones(notifs);
+      const noLeidas = notifs.filter(n => !n.leida).length;
+      setNotificacionesNoLeidas(noLeidas);
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error);
+    }
+  };
 
-  const handleEliminarUsuario = async (email) => {
-    if (window.confirm(`¿Estás seguro de eliminar al usuario ${email}?`)) {
+  const cargarReportes = async () => {
+    try {
+      const reps = await reporteService.obtenerReportes();
+      setReportes(reps);
+    } catch (error) {
+      console.error('Error al cargar reportes:', error);
+    }
+  };
+
+  const handleMarcarLeida = async (id) => {
+    await notificationService.marcarComoLeida(id);
+    cargarNotificaciones();
+  };
+
+  const handleMarcarTodasLeidas = async () => {
+    await notificationService.marcarTodasComoLeidas();
+    cargarNotificaciones();
+  };
+
+  const handleEliminarNotificacion = async (id) => {
+    await notificationService.eliminarNotificacion(id);
+    cargarNotificaciones();
+  };
+
+  const handleCrearReporte = async () => {
+    try {
+      const reporte = await reporteService.generarReportePersonalizado(nuevoReporte);
+      await reporteService.crearReporte(reporte);
+      alert('Reporte creado exitosamente');
+      setShowReportModal(false);
+      setNuevoReporte({
+        nombre: '',
+        tipo: 'USUARIOS',
+        fechaInicio: '',
+        fechaFin: '',
+        filtros: {}
+      });
+      cargarReportes();
+    } catch (error) {
+      alert('Error al crear reporte');
+    }
+  };
+
+  const handleActualizarReporte = async (id, datos) => {
+    try {
+      await reporteService.actualizarReporte(id, datos);
+      alert('Reporte actualizado');
+      setModoEdicion(false);
+      setReporteSeleccionado(null);
+      cargarReportes();
+    } catch (error) {
+      alert('Error al actualizar reporte');
+    }
+  };
+
+  const handleEliminarReporte = async (id) => {
+    if (window.confirm('¿Eliminar este reporte?')) {
       try {
-        await adminService.eliminarUsuario(email);
-        alert('Usuario eliminado exitosamente');
-        cargarDatos();
+        await reporteService.eliminarReporte(id);
+        alert('Reporte eliminado');
+        cargarReportes();
       } catch (error) {
-        alert('Error al eliminar usuario');
+        alert('Error al eliminar reporte');
       }
     }
   };
 
-  const handleCambiarRol = async (email, nuevoRol) => {
-    try {
-      await adminService.cambiarRol(email, nuevoRol);
-      alert('Rol actualizado exitosamente');
-      cargarDatos();
-    } catch (error) {
-      alert('Error al cambiar rol');
+  const handleExportarReporte = (reporte, formato) => {
+    if (formato === 'CSV') {
+      reporteService.exportarCSV(reporte);
+    } else if (formato === 'JSON') {
+      reporteService.exportarJSON(reporte);
+    }
+  };
+
+  const getIconoNotificacion = (tipo) => {
+    switch (tipo) {
+      case 'NUEVO_USUARIO': return 'person_add';
+      case 'CAMBIO_ROL': return 'swap_horiz';
+      case 'ELIMINACION': return 'delete';
+      case 'SISTEMA': return 'info';
+      default: return 'notifications';
     }
   };
 
@@ -156,7 +246,7 @@ const AdminDashboard = () => {
             className={`nav-item ${activeSection === 'exercises' ? 'active' : ''}`}
             onClick={() => navigate('/ejercicios')}
           >
-            <span className="material-icons">exercise</span>
+            <span className="material-icons">sports_gymnastics</span>
             <span className="nav-text">Ejercicios</span>
           </button>
           
@@ -177,11 +267,83 @@ const AdminDashboard = () => {
           <h1 className="admin-title">Admin Dashboard</h1>
           
           <div className="admin-header-actions">
-            <button className="notification-btn">
-              <span className="material-icons">notifications</span>
-            </button>
+            {/* Botón de notificaciones */}
+            <div className="notification-container">
+              <button 
+                className="notification-btn"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <span className="material-icons">notifications</span>
+                {notificacionesNoLeidas > 0 && (
+                  <span className="notification-badge">{notificacionesNoLeidas}</span>
+                )}
+              </button>
+
+              {/* Panel de notificaciones */}
+              {showNotifications && (
+                <div className="notifications-panel">
+                  <div className="notifications-header">
+                    <h3>Notificaciones</h3>
+                    {notificacionesNoLeidas > 0 && (
+                      <button 
+                        className="mark-all-read"
+                        onClick={handleMarcarTodasLeidas}
+                      >
+                        Marcar todas como leídas
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="notifications-list">
+                    {notificaciones.length === 0 ? (
+                      <div className="empty-notifications">
+                        <span className="material-icons">notifications_none</span>
+                        <p>No hay notificaciones</p>
+                      </div>
+                    ) : (
+                      notificaciones.map(notif => (
+                        <div 
+                          key={notif.id} 
+                          className={`notification-item ${notif.leida ? 'read' : 'unread'}`}
+                        >
+                          <div className="notification-icon">
+                            <span className="material-icons">
+                              {getIconoNotificacion(notif.tipo)}
+                            </span>
+                          </div>
+                          <div className="notification-content">
+                            <p className="notification-message">{notif.mensaje}</p>
+                            <span className="notification-time">
+                              {new Date(notif.fecha).toLocaleString('es-ES')}
+                            </span>
+                          </div>
+                          <div className="notification-actions">
+                            {!notif.leida && (
+                              <button 
+                                className="btn-icon"
+                                onClick={() => handleMarcarLeida(notif.id)}
+                                title="Marcar como leída"
+                              >
+                                <span className="material-icons">done</span>
+                              </button>
+                            )}
+                            <button 
+                              className="btn-icon delete"
+                              onClick={() => handleEliminarNotificacion(notif.id)}
+                              title="Eliminar"
+                            >
+                              <span className="material-icons">close</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             
-            <div className="admin-avatar" onClick={() => setShowProfileModal(true)}>
+            <div className="admin-avatar" onClick={() => navigate('/admin/perfil')}>
               <span className="avatar-initials">
                 {admin.nombre?.charAt(0)}{admin.apellido?.charAt(0) || 'A'}
               </span>
@@ -315,7 +477,7 @@ const AdminDashboard = () => {
 
                 <div className="dashboard-card">
                   <div className="dashboard-card-icon exercises">
-                    <span className="material-icons">exercise</span>
+                    <span className="material-icons">sports_gymnastics</span>
                   </div>
                   <div className="dashboard-card-content">
                     <h3>Ejercicios</h3>
@@ -343,10 +505,20 @@ const AdminDashboard = () => {
             </section>
           )}
 
-          {/* Analytics */}
+          {/* Analytics & Reports */}
           {activeSection === 'analytics' && (
             <section className="management-section">
-              <h2 className="section-title-main">Estadísticas del Sistema</h2>
+              <div className="section-header">
+                <h2 className="section-title-main">Gestión de Reportes</h2>
+                <button 
+                  className="btn-primary"
+                  onClick={() => setShowReportModal(true)}
+                >
+                  <span className="material-icons">add</span>
+                  Nuevo Reporte
+                </button>
+              </div>
+
               <div className="stats-grid">
                 <div className="stat-card-large">
                   <h3>Total de Usuarios</h3>
@@ -365,10 +537,183 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Lista de reportes */}
+              <div className="reportes-lista">
+                <h3>Reportes Guardados</h3>
+                {reportes.length === 0 ? (
+                  <div className="empty-state">
+                    <span className="material-icons">description</span>
+                    <p>No hay reportes creados</p>
+                  </div>
+                ) : (
+                  <div className="reportes-grid">
+                    {reportes.map(reporte => (
+                      <div key={reporte.id} className="reporte-card">
+                        <div className="reporte-header">
+                          <h4>{reporte.nombre}</h4>
+                          <span className="reporte-tipo">{reporte.tipo}</span>
+                        </div>
+                        <p className="reporte-fecha">
+                          Creado: {new Date(reporte.fechaCreacion).toLocaleDateString('es-ES')}
+                        </p>
+                        <div className="reporte-actions">
+                          <button 
+                            className="btn-icon"
+                            onClick={() => handleExportarReporte(reporte, 'CSV')}
+                            title="Exportar CSV"
+                          >
+                            <span className="material-icons">download</span>
+                          </button>
+                          <button 
+                            className="btn-icon"
+                            onClick={() => {
+                              setReporteSeleccionado(reporte);
+                              setModoEdicion(true);
+                            }}
+                            title="Editar"
+                          >
+                            <span className="material-icons">edit</span>
+                          </button>
+                          <button 
+                            className="btn-icon delete"
+                            onClick={() => handleEliminarReporte(reporte.id)}
+                            title="Eliminar"
+                          >
+                            <span className="material-icons">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </section>
           )}
         </div>
       </main>
+
+      {/* Modal de creación/edición de reporte */}
+      {(showReportModal || modoEdicion) && (
+        <div className="modal-overlay" onClick={() => {
+          setShowReportModal(false);
+          setModoEdicion(false);
+          setReporteSeleccionado(null);
+        }}>
+          <div className="modal-content report-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{modoEdicion ? 'Editar Reporte' : 'Nuevo Reporte'}</h3>
+              <button 
+                onClick={() => {
+                  setShowReportModal(false);
+                  setModoEdicion(false);
+                  setReporteSeleccionado(null);
+                }} 
+                className="close-btn"
+              >
+                <span className="material-icons">close</span>
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Nombre del Reporte</label>
+                <input 
+                  type="text"
+                  className="form-control"
+                  value={modoEdicion ? reporteSeleccionado?.nombre : nuevoReporte.nombre}
+                  onChange={(e) => {
+                    if (modoEdicion) {
+                      setReporteSeleccionado({...reporteSeleccionado, nombre: e.target.value});
+                    } else {
+                      setNuevoReporte({...nuevoReporte, nombre: e.target.value});
+                    }
+                  }}
+                  placeholder="Ej: Reporte Mensual de Usuarios"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Tipo de Reporte</label>
+                <select 
+                  className="form-control"
+                  value={modoEdicion ? reporteSeleccionado?.tipo : nuevoReporte.tipo}
+                  onChange={(e) => {
+                    if (modoEdicion) {
+                      setReporteSeleccionado({...reporteSeleccionado, tipo: e.target.value});
+                    } else {
+                      setNuevoReporte({...nuevoReporte, tipo: e.target.value});
+                    }
+                  }}
+                >
+                  <option value="USUARIOS">Usuarios</option>
+                  <option value="ACTIVIDAD">Actividad</option>
+                  <option value="EJERCICIOS">Ejercicios</option>
+                </select>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Fecha Inicio</label>
+                  <input 
+                    type="date"
+                    className="form-control"
+                    value={modoEdicion ? reporteSeleccionado?.fechaInicio : nuevoReporte.fechaInicio}
+                    onChange={(e) => {
+                      if (modoEdicion) {
+                        setReporteSeleccionado({...reporteSeleccionado, fechaInicio: e.target.value});
+                      } else {
+                        setNuevoReporte({...nuevoReporte, fechaInicio: e.target.value});
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Fecha Fin</label>
+                  <input 
+                    type="date"
+                    className="form-control"
+                    value={modoEdicion ? reporteSeleccionado?.fechaFin : nuevoReporte.fechaFin}
+                    onChange={(e) => {
+                      if (modoEdicion) {
+                        setReporteSeleccionado({...reporteSeleccionado, fechaFin: e.target.value});
+                      } else {
+                        setNuevoReporte({...nuevoReporte, fechaFin: e.target.value});
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button 
+                  className="btn-secondary"
+                  onClick={() => {
+                    setShowReportModal(false);
+                    setModoEdicion(false);
+                    setReporteSeleccionado(null);
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="btn-primary"
+                  onClick={() => {
+                    if (modoEdicion) {
+                      handleActualizarReporte(reporteSeleccionado.id, reporteSeleccionado);
+                    } else {
+                      handleCrearReporte();
+                    }
+                  }}
+                >
+                  {modoEdicion ? 'Actualizar' : 'Crear'} Reporte
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

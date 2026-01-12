@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import adminService from '../../services/adminService';
+import notificationService from '../../services/notificationService';
 import './AdminUsuarios.css';
 
 const AdminUsuarios = () => {
@@ -40,6 +41,10 @@ const AdminUsuarios = () => {
     if (window.confirm(`¿Estás seguro de eliminar al usuario ${email}?`)) {
       try {
         await adminService.eliminarUsuario(email);
+        
+        // Crear notificación
+        await notificationService.notificarEliminacionUsuario(email);
+        
         alert('Usuario eliminado exitosamente');
         cargarUsuarios();
       } catch (error) {
@@ -54,6 +59,10 @@ const AdminUsuarios = () => {
     if (window.confirm(`¿Cambiar rol de ${email} a ${nuevoRol}?`)) {
       try {
         await adminService.cambiarRol(email, nuevoRol);
+        
+        // Crear notificación
+        await notificationService.notificarCambioRol(email, rolActual, nuevoRol);
+        
         alert('Rol actualizado exitosamente');
         cargarUsuarios();
       } catch (error) {
@@ -74,9 +83,18 @@ const AdminUsuarios = () => {
             <p>Administra los usuarios del sistema</p>
           </div>
         </div>
-        <button className="btn-primary" onClick={cargarUsuarios}>
-          <span className="material-icons">refresh</span>
-          Actualizar
+        
+        {/* Botón de actualizar arreglado */}
+        <button 
+          className="btn-refresh" 
+          onClick={cargarUsuarios}
+          disabled={loading}
+          title="Actualizar lista"
+        >
+          <span className={`material-icons ${loading ? 'spinning' : ''}`}>
+            refresh
+          </span>
+          <span className="btn-text">Actualizar</span>
         </button>
       </div>
 
@@ -90,6 +108,19 @@ const AdminUsuarios = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <button 
+              className="clear-search"
+              onClick={() => setSearchTerm('')}
+            >
+              <span className="material-icons">close</span>
+            </button>
+          )}
+        </div>
+        
+        <div className="search-info">
+          <span className="material-icons">info</span>
+          Mostrando {usuariosFiltrados.length} de {usuarios.length} usuarios
         </div>
       </div>
 
@@ -103,6 +134,14 @@ const AdminUsuarios = () => {
           <div className="empty-state">
             <span className="material-icons">group</span>
             <p>{searchTerm ? 'No se encontraron usuarios' : 'No hay usuarios registrados'}</p>
+            {searchTerm && (
+              <button 
+                className="btn-secondary"
+                onClick={() => setSearchTerm('')}
+              >
+                Limpiar búsqueda
+              </button>
+            )}
           </div>
         ) : (
           <div className="table-responsive">
@@ -122,12 +161,31 @@ const AdminUsuarios = () => {
               <tbody>
                 {usuariosFiltrados.map((usuario) => (
                   <tr key={usuario.id}>
-                    <td>{usuario.id}</td>
-                    <td>{usuario.nombre} {usuario.apellido}</td>
-                    <td>@{usuario.usuario}</td>
+                    <td>
+                      <span className="user-id">#{usuario.id}</span>
+                    </td>
+                    <td>
+                      <div className="user-name-cell">
+                        <div className="user-avatar-small">
+                          {usuario.nombre?.charAt(0)}{usuario.apellido?.charAt(0)}
+                        </div>
+                        <span>{usuario.nombre} {usuario.apellido}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="username">@{usuario.usuario}</span>
+                    </td>
                     <td>{usuario.correo}</td>
-                    <td>{usuario.peso || 'N/A'} kg</td>
-                    <td>{usuario.altura || 'N/A'} m</td>
+                    <td>
+                      <span className="metric-value">
+                        {usuario.peso || 'N/A'} {usuario.peso && 'kg'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="metric-value">
+                        {usuario.altura || 'N/A'} {usuario.altura && 'm'}
+                      </span>
+                    </td>
                     <td>
                       <span className={`badge badge-${usuario.rol?.toLowerCase()}`}>
                         {usuario.rol}

@@ -431,3 +431,387 @@
     justify-content: space-around;
   }
 }
+
+/* Agregar estos estilos al final de tu RutinasDia.css existente */
+
+/* ===========================
+   SELECTOR DE DÍAS
+=========================== */
+.dias-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.dias-selector::-webkit-scrollbar {
+  height: 6px;
+}
+
+.dias-selector::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.dias-selector::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+.dia-btn {
+  padding: 16px 24px;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.dia-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.dia-btn.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border-color: var(--primary);
+}
+
+.dia-emoji {
+  font-size: 24px;
+}
+
+.dia-label {
+  font-size: 14px;
+}
+
+/* ===========================
+   BOTÓN AGREGAR
+=========================== */
+.btn-agregar-ejercicio {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2rem;
+  transition: all 0.2s;
+}
+
+.btn-agregar-ejercicio:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-agregar-ejercicio .material-icons {
+  font-size: 20px;
+}
+
+/* ===========================
+   ESTADOS
+=========================== */
+.loading-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-secondary);
+}
+
+.loading-state .material-icons {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--primary);
+}
+
+.loading-state.rotating .material-icons {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  padding: 60px 24px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+.empty-state .material-icons {
+  font-size: 64px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* ===========================
+   TARJETAS DE EJERCICIO
+=========================== */
+.ejercicio-notas {
+  grid-column: 1 / -1;
+  padding: 12px 16px;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+.btn-eliminar {
+  padding: 12px;
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-eliminar:hover {
+  background-color: var(--danger-light);
+}
+
+.btn-eliminar .material-icons {
+  font-size: 20px;
+}
+
+/* ===========================
+   MODAL FORMULARIO
+=========================== */
+.modal-form {
+  padding: 24px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* ===========================
+   ESTADÍSTICAS MODAL
+=========================== */
+.estadisticas-content {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-card-large {
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
+}
+
+.stat-card-large:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card-large.highlight {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border-color: var(--primary);
+}
+
+.stat-icon-large {
+  font-size: 48px !important;
+  color: var(--primary);
+}
+
+.stat-card-large.highlight .stat-icon-large {
+  color: white;
+}
+
+.stat-icon-large.success {
+  color: var(--success);
+}
+
+.stat-icon-large.warning {
+  color: var(--warning);
+}
+
+.stat-info-large h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.stat-card-large.highlight .stat-info-large h4 {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-value-large {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-card-large.highlight .stat-value-large {
+  color: white;
+}
+
+.stat-value-large.success {
+  color: var(--success);
+}
+
+.stat-value-large.warning {
+  color: var(--warning);
+}
+
+.progress-bar-large {
+  margin: 24px;
+  height: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-fill-large {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  transition: width 0.3s ease;
+}
+
+/* ===========================
+   UTILIDADES
+=========================== */
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ===========================
+   MODO OSCURO
+=========================== */
+.rutina-dia-container.dark {
+  --bg-primary: #0f1419;
+  --bg-secondary: #1a1f2e;
+  --card-bg: #1a1f2e;
+  --text-primary: #e1e8ed;
+  --text-secondary: #94a3b8;
+  --border-color: #2d3748;
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --danger: #ef4444;
+  --danger-light: #7f1d1d;
+  --success: #10b981;
+  --warning: #f59e0b;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 768px) {
+  .dias-selector {
+    gap: 8px;
+  }
+  
+  .dia-btn {
+    min-width: 100px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .dia-emoji {
+    font-size: 20px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .estadisticas-content {
+    grid-template-columns: 1fr;
+  }
+}

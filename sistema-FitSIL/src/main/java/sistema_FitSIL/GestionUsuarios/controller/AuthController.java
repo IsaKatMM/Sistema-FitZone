@@ -2,13 +2,13 @@ package sistema_FitSIL.GestionUsuarios.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import sistema_FitSIL.GestionUsuarios.model.Persona;
-import sistema_FitSIL.GestionUsuarios.model.Usuario;
+import org.springframework.web.bind.annotation.*;
+
 import sistema_FitSIL.GestionUsuarios.model.Administrador;
-import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
+import sistema_FitSIL.GestionUsuarios.model.Usuario;
 import sistema_FitSIL.GestionUsuarios.repository.AdministradorRepository;
+import sistema_FitSIL.GestionUsuarios.repository.UsuarioRepository;
 import sistema_FitSIL.GestionUsuarios.security.JwtService;
 
 import java.util.HashMap;
@@ -17,14 +17,14 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
-    private UsuarioRepository usuarioRepo;
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private AdministradorRepository adminRepo;
+    private AdministradorRepository administradorRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -32,58 +32,78 @@ public class AuthController {
     @Autowired
     private JwtService jwtService;
 
+    /**
+     * ✅ LOGIN UNIFICADO - Busca en usuarios y administradores
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-
         String correo = body.get("correo");
         String contrasenia = body.get("contrasenia");
+
+        System.out.println("==========================================");
+        System.out.println("🔐 Intento de login para: " + correo);
 
         if (correo == null || contrasenia == null) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Correo y contraseña son obligatorios"));
         }
 
-        // 🔍 BUSCAR EN AMBAS TABLAS
-        Persona persona = null;
-        
-        // Primero buscar en Usuario
-        Optional<Usuario> usuarioOpt = usuarioRepo.findByCorreo(correo);
-        if (usuarioOpt.isPresent()) {
-            persona = usuarioOpt.get();
-        } else {
-            // Si no es Usuario, buscar en Administrador
-            Optional<Administrador> adminOpt = adminRepo.findByCorreo(correo);
-            if (adminOpt.isPresent()) {
-                persona = adminOpt.get();
+        // 1️⃣ Buscar primero en USUARIOS
+        Optional<Usuario> usuario = usuarioRepository.findByCorreo(correo);
+        if (usuario.isPresent()) {
+            Usuario u = usuario.get();
+            
+            if (passwordEncoder.matches(contrasenia, u.getContrasenia())) {
+                String rolSinPrefijo = u.getRol().name(); // USUARIO, ADMINISTRADOR
+                String token = jwtService.generarToken(u.getCorreo(), rolSinPrefijo);
+                
+                System.out.println("✅ Login exitoso como USUARIO");
+                System.out.println("📧 Email: " + u.getCorreo());
+                System.out.println("👤 Rol: " + rolSinPrefijo);
+                System.out.println("🔑 Token generado con rol: ROLE_" + rolSinPrefijo);
+                System.out.println("==========================================");
+
+                Map<String, Object> respuesta = new HashMap<>();
+                respuesta.put("usuario", u);
+                respuesta.put("correo", u.getCorreo());
+                respuesta.put("rol", rolSinPrefijo); // Sin ROLE_ para el frontend
+                respuesta.put("nombre", u.getNombre());
+                respuesta.put("token", token);
+
+                return ResponseEntity.ok(respuesta);
             }
         }
 
-        // Si no se encontró en ninguna tabla
-        if (persona == null) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Credenciales inválidas"));
+        // 2️⃣ Si no es usuario, buscar en ADMINISTRADORES
+        Optional<Administrador> administrador = administradorRepository.findByCorreo(correo);
+        if (administrador.isPresent()) {
+            Administrador a = administrador.get();
+            
+            if (passwordEncoder.matches(contrasenia, a.getContrasenia())) {
+                String rolSinPrefijo = a.getRol().name(); // ADMINISTRADOR
+                String token = jwtService.generarToken(a.getCorreo(), rolSinPrefijo);
+                
+                System.out.println("✅ Login exitoso como ADMINISTRADOR");
+                System.out.println("📧 Email: " + a.getCorreo());
+                System.out.println("👤 Rol: " + rolSinPrefijo);
+                System.out.println("🔑 Token generado con rol: ROLE_" + rolSinPrefijo);
+                System.out.println("==========================================");
+
+                Map<String, Object> respuesta = new HashMap<>();
+                respuesta.put("usuario", a);
+                respuesta.put("correo", a.getCorreo());
+                respuesta.put("rol", rolSinPrefijo); // Sin ROLE_ para el frontend
+                respuesta.put("nombre", a.getNombre());
+                respuesta.put("token", token);
+
+                return ResponseEntity.ok(respuesta);
+            }
         }
 
-        // 🔐 VERIFICAR CONTRASEÑA
-        if (!passwordEncoder.matches(contrasenia, persona.getContrasenia())) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Credenciales inválidas"));
-        }
-
-        // ✅ GENERAR TOKEN
-        String token = jwtService.generarToken(
-                persona.getCorreo(),
-                persona.getRol().name()
-        );
-
-        // ✅ RESPUESTA CONSISTENTE con el frontend
-        Map<String, Object> response = new HashMap<>();
-        response.put("correo", persona.getCorreo());
-        response.put("rol", persona.getRol().name());
-        response.put("token", token);
-        response.put("nombre", persona.getNombre());
-        response.put("usuario", persona); // Para compatibilidad
-
-        return ResponseEntity.ok(response);
+        System.err.println("❌ Credenciales inválidas para: " + correo);
+        System.out.println("==========================================");
+        
+        return ResponseEntity.status(401)
+                .body(Map.of("error", "Credenciales inválidas"));
     }
 }

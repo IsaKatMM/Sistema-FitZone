@@ -12,10 +12,18 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
+  // ✅ SOLUCIÓN DEFINITIVA: Forzar modo claro al inicio
   const [darkMode, setDarkMode] = useState(() => {
-    // Cargar preferencia guardada o usar dark por defecto
+    // 1. Limpiar localStorage
     const saved = localStorage.getItem('theme');
-    return saved ? saved === 'dark' : true;
+    
+    // 2. Si está en dark, cambiarlo a light
+    if (saved === 'dark') {
+      localStorage.setItem('theme', 'light');
+    }
+    
+    // 3. Siempre iniciar en false (light mode)
+    return false;
   });
 
   const [textScale, setTextScale] = useState(() => {
@@ -26,11 +34,14 @@ export const ThemeProvider = ({ children }) => {
 
   const [speakOnHover, setSpeakOnHover] = useState(() => {
     const saved = localStorage.getItem('speakOnHover');
-    return saved ? saved === 'true' : false;
+    return saved === 'true';
   });
 
   useEffect(() => {
-    // Aplicar clase al documento
+    // 🔥 LIMPIAR la clase dark del HTML al montar
+    document.documentElement.classList.remove('dark');
+    
+    // Aplicar clase al documento según el estado
     if (darkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -83,7 +94,15 @@ export const ThemeProvider = ({ children }) => {
   const toggleSpeak = () => setSpeakOnHover(prev => !prev);
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme, textScale, increaseText, decreaseText, speakOnHover, toggleSpeak }}>
+    <ThemeContext.Provider value={{ 
+      darkMode, 
+      toggleTheme, 
+      textScale, 
+      increaseText, 
+      decreaseText, 
+      speakOnHover, 
+      toggleSpeak 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

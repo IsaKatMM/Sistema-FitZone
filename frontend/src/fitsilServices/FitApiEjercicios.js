@@ -29,13 +29,14 @@ export async function guardarEjercicio(formData) {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${token}`,
+      // NO incluir Content-Type cuando envías FormData
     },
     body: formData,
   });
   
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error || "Error al guardar ejercicio");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error al guardar ejercicio");
   }
   
   return res.json();
@@ -51,13 +52,14 @@ export async function actualizarEjercicio(id, formData) {
     method: "PUT",
     headers: {
       "Authorization": `Bearer ${token}`,
+      // NO incluir Content-Type cuando envías FormData
     },
     body: formData,
   });
   
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error || "Error al actualizar ejercicio");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error al actualizar ejercicio");
   }
   
   return res.json();
@@ -77,13 +79,11 @@ export async function eliminarEjercicio(id) {
   });
   
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(error || "Error al eliminar ejercicio");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error al eliminar ejercicio");
   }
   
-  // El backend devuelve texto plano, no JSON
-  const texto = await res.text();
-  return { mensaje: texto };
+  return res.json();
 }
 
 // ============================================

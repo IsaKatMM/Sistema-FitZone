@@ -43,31 +43,34 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (loading) return;
+    e.preventDefault();
+    if (loading) return;
 
-  setLoading(true);
-  setError('');
+    setLoading(true);
+    setError('');
 
-  try {
-    const response = await authService.login(formData);
+    try {
+      const response = await authService.login(formData);
 
-    // 🔑 El backend devuelve { token, usuario }
-    const usuario = response.usuario;
+      // 🔑 El backend devuelve { token, usuario }
+      const usuario = response.usuario;
 
-    // ✅ Avisar al AuthContext
-    login(usuario);
+      // ✅ Avisar al AuthContext
+      login(usuario);
 
-    // ✅ Redirección simple (por ahora SOLO usuario)
-    navigate('/user/dashboard', { replace: true });
+      // ✅ Redirección según el rol
+      if (usuario.rol === 'ADMINISTRADOR') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/user/dashboard', { replace: true });
+      }
 
-  } catch (err) {
-    setError(err.message || 'Error al iniciar sesión');
-  } finally {
-    setLoading(false);
-  }
-};
-
+    } catch (err) {
+      setError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleTheme = () => {
     setDarkMode(!darkMode);
@@ -76,7 +79,7 @@ const Login = () => {
   return (
     <div className={`login-container-modern ${darkMode ? 'dark' : ''}`}>
       {/* Botón de cambio de tema */}
-      <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle theme">
+      <button onClick={toggleTheme} className="theme-toggle" aria-label="Cambiar tema">
         {darkMode ? '☀️' : '🌙'}
       </button>
 
@@ -86,7 +89,7 @@ const Login = () => {
           <div className="logo-image">
             <img 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgyXkwDfXt_C6aH_XP0K1G-Yy8x2axHH4CF8_jzDHIbSyw7De5w04I--q6dtolu11bObd7cgrCSbUwvmxVILrgD7dPJXUcWRpGz2d--Bz5M7wTjNjZRFdm4lrD2udS4fWwgNFkLSOPkM2k3Qqal0nAN806BYUSBv-b9GdhTniQs8XXUnVLn1s6BdOLPZOtLK8y3LxO2pd3iX4IkZ1Ux2Al8lBitlCjxRZ1QFS2u_z8dXSqbzb8ko7bftSBuAvG2hBa68GH0w25Wpo"
-              alt="FitSIL Logo"
+              alt="Logo FitSIL"
             />
           </div>
           <p className="logo-text">FitSIL</p>
@@ -106,14 +109,14 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="login-form-modern">
           {/* Campo Email */}
           <div className="form-field">
-            <label htmlFor="correo" className="field-label">Email</label>
+            <label htmlFor="correo" className="field-label">Correo Electrónico</label>
             <input
               type="email"
               id="correo"
               name="correo"
               value={formData.correo}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder="Ingresa tu correo electrónico"
               className="field-input"
               required
               disabled={loading}
@@ -122,7 +125,7 @@ const Login = () => {
 
           {/* Campo Contraseña */}
           <div className="form-field">
-            <label htmlFor="contrasenia" className="field-label">Password</label>
+            <label htmlFor="contrasenia" className="field-label">Contraseña</label>
             <div className="password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -130,7 +133,7 @@ const Login = () => {
                 name="contrasenia"
                 value={formData.contrasenia}
                 onChange={handleChange}
-                placeholder="Enter your password"
+                placeholder="Ingresa tu contraseña"
                 className="field-input password-input"
                 required
                 disabled={loading}
@@ -139,7 +142,7 @@ const Login = () => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="password-toggle"
-                aria-label="Toggle password visibility"
+                aria-label="Mostrar u ocultar contraseña"
                 disabled={loading}
               >
                 <span className="material-icons">
@@ -147,11 +150,6 @@ const Login = () => {
                 </span>
               </button>
             </div>
-          </div>
-
-          {/* Olvidé mi contraseña */}
-          <div className="forgot-password-link">
-            <a href="#" className="link-text">Forgot password?</a>
           </div>
 
           {/* Botón de Login */}
@@ -168,7 +166,7 @@ const Login = () => {
         <div className="register-link">
           <p className="register-text">
             ¿No tienes una cuenta?
-            <Link to="/register" className="register-link-text"> Registrate</Link>
+            <Link to="/register" className="register-link-text"> Regístrate</Link>
           </p>
         </div>
       </div>

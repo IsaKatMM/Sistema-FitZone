@@ -13,17 +13,17 @@ import UserDashboard from "./components/Dashboard/UserDashboard";
 import UserProfile from "./components/Profile/UserProfile";
 import RutinasDia from "./components/Rutinas/RutinasDia";
 import FitEstadisticas from "./Pages/FitEstadisticas";
-import FitSILApp from "./fitsilApp/FitSILApp"; // ✅ ESTE es tu sistema de ejercicios
-import RecetasPage from "./components/Recetas/RecetasPage";
+import FitSILApp from "./fitsilApp/FitSILApp";
+import RecetasPage from "./components/recetas/RecetasPage";
 
 // Admin pages
 import AdminDashboard from "./components/Dashboard/AdminDashboard";
 import AdminUsuarios from "./components/Admin/AdminUsuarios";
+import AdminProfile from "./components/Profile/AdminProfile";
 
 function App() {
   return (
     <Routes>
-
       {/* ===================== */}
       {/* RUTAS PÚBLICAS */}
       {/* ===================== */}
@@ -37,7 +37,6 @@ function App() {
       {/* ===================== */}
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
-
           {/* ----- USUARIO ----- */}
           <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/ejercicios" element={<FitSILApp />} />
@@ -49,8 +48,8 @@ function App() {
           {/* ----- ADMIN ----- */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-          <Route path="/admin/ejercicios" element={<FitSILApp />} /> {/* ✅ USAR EL MISMO COMPONENTE */}
-
+          <Route path="/admin/ejercicios" element={<FitSILApp />} />
+          <Route path="/admin/perfil" element={<AdminProfile />} /> {/* ✅ NUEVA RUTA */}
         </Route>
       </Route>
 
@@ -58,7 +57,6 @@ function App() {
       {/* RUTA POR DEFECTO */}
       {/* ===================== */}
       <Route path="*" element={<Navigate to="/login" replace />} />
-
     </Routes>
   );
 }

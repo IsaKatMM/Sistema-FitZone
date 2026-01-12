@@ -33,7 +33,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         "/administradores/login",
         "/auth/login",
         "/ejercicios/obtener",
-        "/ejercicios/buscar"
+        "/ejercicios/buscar",
+        "/ejercicios/imagen"  // ✅ AGREGAR ESTA LÍNEA
     );
 
     @Override

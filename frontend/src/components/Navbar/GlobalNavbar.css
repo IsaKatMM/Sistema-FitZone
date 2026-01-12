@@ -420,3 +420,106 @@
     height: 2.25rem;
   }
 }
+
+/* Agregar estos estilos al final de tu GlobalNavbar.css existente */
+
+/* Botón de menú separado */
+.menu-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0.5rem;
+}
+
+.menu-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.menu-toggle-btn .material-icons {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.dark .menu-toggle-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .menu-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Avatar ahora es clickeable */
+.user-avatar {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+.user-avatar:active {
+  transform: scale(0.95);
+}
+
+/* Ajustar el contenedor del menú de usuario */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+/* El dropdown ahora se posiciona relativo al contenedor user-menu */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 1rem);
+  right: 0;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  padding: 1rem;
+  z-index: 1000;
+  animation: dropdownSlide 0.3s ease;
+}
+
+.dark .dropdown-menu {
+  background: #1e293b;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive: En móviles, mostrar solo el avatar y el menú */
+@media (max-width: 768px) {
+  .menu-toggle-btn {
+    display: flex;
+  }
+  
+  .dropdown-menu {
+    right: -1rem;
+    min-width: 260px;
+  }
+}

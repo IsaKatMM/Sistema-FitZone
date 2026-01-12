@@ -136,4 +136,57 @@ public class UsuarioController {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
+
+    // Agregar este método al UsuarioController.java
+
+@PutMapping("/cambiar-contrasena")
+public ResponseEntity<?> cambiarContrasena(
+        @RequestParam String email,
+        @RequestHeader("Authorization") String authHeader,
+        @RequestBody Map<String, String> passwords) {
+    
+    try {
+        String token = authHeader.replace("Bearer ", "");
+        String correoToken = jwtService.obtenerCorreoDesdeToken(token);
+
+        // Validar que el usuario solo pueda cambiar su propia contraseña
+        if (!correoToken.equals(email)) {
+            return ResponseEntity.status(403)
+                    .body(Map.of("error", "No tienes permisos para cambiar esta contraseña"));
+        }
+
+        String contrasenaActual = passwords.get("contrasenaActual");
+        String contrasenaNueva = passwords.get("contrasenaNueva");
+
+        if (contrasenaActual == null || contrasenaNueva == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Debe proporcionar contraseña actual y nueva"));
+        }
+
+        if (contrasenaNueva.length() < 6) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La contraseña debe tener al menos 6 caracteres"));
+        }
+
+        // Buscar usuario
+        Usuario usuario = usuarioService.obtenerPerfil(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Verificar contraseña actual
+        if (!passwordEncoder.matches(contrasenaActual, usuario.getContrasenia())) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "La contraseña actual es incorrecta"));
+        }
+
+        // Actualizar contraseña
+        usuario.setContrasenia(passwordEncoder.encode(contrasenaNueva));
+        usuarioService.actualizarPerfil(email, usuario);
+
+        return ResponseEntity.ok(Map.of("mensaje", "Contraseña actualizada exitosamente"));
+        
+    } catch (Exception e) {
+        return ResponseEntity.status(500)
+                .body(Map.of("error", "Error al cambiar contraseña: " + e.getMessage()));
+    }
+}
 }

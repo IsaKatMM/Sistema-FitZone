@@ -54,8 +54,8 @@ export async function crearReceta(receta) {
   });
   
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "Error al crear receta");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error al crear receta");
   }
   
   return res.json();
@@ -77,8 +77,8 @@ export async function actualizarReceta(id, receta) {
   });
   
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "Error al actualizar receta");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error al actualizar receta");
   }
   
   return res.json();
@@ -98,8 +98,8 @@ export async function eliminarReceta(id) {
   });
   
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "Error al eliminar receta");
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error al eliminar receta");
   }
   
   return res.json();

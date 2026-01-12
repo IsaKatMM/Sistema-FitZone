@@ -1,72 +1,101 @@
-import "./ejercicios.css";
-
-// Importar imágenes estáticas
-import aperturas from "./ejerciciosImagenes/aperturas_mancuernas.jpg";
-import curlBiceps from "./ejerciciosImagenes/curl_biceps_barra.webp";
-import dominadas from "./ejerciciosImagenes/dominadas.webp";
-import extensionTriceps from "./ejerciciosImagenes/extencion_triceps_polea.png";
-import pesoMuerto from "./ejerciciosImagenes/peso_muerto.jpg";
-import pressBanca from "./ejerciciosImagenes/press_banca.jpg";
-import pressMilitar from "./ejerciciosImagenes/press_militar.webp";
-import remoBarra from "./ejerciciosImagenes/remo_barra.webp";
-import sentadilla from "./ejerciciosImagenes/sentadilla.webp";
-
-// Relación nombre → imagen
-const imagenes = {
-  "Aperturas con mancuernas": aperturas,
-  "Curl de bíceps con barra": curlBiceps,
-  "Dominadas": dominadas,
-  "Extensión de tríceps en polea": extensionTriceps,
-  "Peso muerto": pesoMuerto,
-  "Press de banca": pressBanca,
-  "Press militar": pressMilitar,
-  "Remo con barra": remoBarra,
-  "Sentadillas": sentadilla,
-};
-
 function EjercicioCard({ ejercicio, onClick, isAdmin, onEditar, onEliminar }) {
-  const imagen = imagenes[ejercicio.nombre];
+  const getImagenUrl = () => {
+    // Si el ejercicio tiene imagen
+    if (ejercicio.imagenUrl) {
+      // Si ya es una URL completa, usarla directamente
+      if (ejercicio.imagenUrl.startsWith('http')) {
+        return ejercicio.imagenUrl;
+      }
+      // Si es solo el nombre del archivo, construir la URL correcta
+      return `http://localhost:8081/ejercicios/imagen/${ejercicio.imagenUrl}`;
+    }
+    return null;
+  };
+
+  const imagen = getImagenUrl();
+
+  // Debug: ver qué URL se está generando
+  console.log('Ejercicio:', ejercicio.nombre);
+  console.log('imagenUrl en BD:', ejercicio.imagenUrl);
+  console.log('URL generada:', imagen);
+
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
+  const handleEditar = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Editando ejercicio:', ejercicio);
+    if (onEditar) {
+      onEditar(ejercicio);
+    }
+  };
+
+  const handleEliminar = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Eliminando ejercicio:', ejercicio);
+    if (onEliminar) {
+      onEliminar(ejercicio);
+    }
+  };
 
   return (
-    <div className="card" onClick={onClick}>
+    <div className="card">
       {/* IMAGEN */}
       <div
         className="card-img"
         style={{
-          backgroundImage: imagen ? `url(${imagen})` : "none",
+          backgroundImage: imagen ? `url(${imagen})` : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          backgroundSize: "cover",
+          backgroundPosition: "center"
         }}
-      />
+        onClick={handleCardClick}
+      >
+        {!imagen && (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "white",
+            fontSize: "48px",
+            fontWeight: "bold"
+          }}>
+            💪
+          </div>
+        )}
+      </div>
 
       {/* CONTENIDO */}
       <div className="card-body">
-        <div>
+        <div onClick={handleCardClick} style={{ cursor: 'pointer' }}>
           <h3>{ejercicio.nombre}</h3>
           <span className="tag">{ejercicio.musculoTrabajado}</span>
         </div>
 
-        {/* BOTONES ADMIN (ESTÉTICA RESTAURADA) */}
+        {/* BOTONES ADMIN */}
         {isAdmin && (
           <div className="card-admin-actions">
             <button
               className="btn-editar-card"
-              title="Editar ejercicio"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditar(ejercicio);
-              }}
+              type="button"
+              onClick={handleEditar}
             >
               <span className="material-icons">edit</span>
+              <span className="btn-text">Editar</span>
             </button>
 
             <button
               className="btn-eliminar-card"
-              title="Eliminar ejercicio"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEliminar(ejercicio);
-              }}
+              type="button"
+              onClick={handleEliminar}
             >
               <span className="material-icons">delete</span>
+              <span className="btn-text">Eliminar</span>
             </button>
           </div>
         )}

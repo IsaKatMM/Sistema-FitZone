@@ -1,3 +1,4 @@
+// src/pages/Estadisticas/Componentes/FiltroRango.jsx
 import "./FiltroRango.css";
 
 const opciones = [
@@ -9,16 +10,18 @@ const opciones = [
 
 export default function FiltroRango({ rango, setRango }) {
   return (
-    <div className="filtro">
-      {opciones.map((o) => (
-        <button
-          key={o.value}
-          className={rango === o.value ? "activo" : ""}
-          onClick={() => setRango(o.value)}
-        >
-          {o.label}
-        </button>
-      ))}
+    <div className="filtro-rango">
+      <div className="filtro-buttons">
+        {opciones.map((o) => (
+          <button
+            key={o.value}
+            className={`filtro-btn ${rango === o.value ? "activo" : ""}`}
+            onClick={() => setRango(o.value)}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

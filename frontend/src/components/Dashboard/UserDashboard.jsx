@@ -3,14 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
 import authService from "../../services/authService";
+import rutinaService from "../../services/rutinaService";
 import "./UserDashboard.css";
 
-import rutinasImg from "../../assets/images/rutinas.png";
-import estadisticasImg from "../../assets/images/estadisticas.png";
-import nutricionImg from "../../assets/images/nutricion.png";
-
 const UserDashboard = () => {
-  const { darkMode } = useTheme(); // ✅ Usar tema global
+  const { darkMode } = useTheme();
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,6 +19,8 @@ const UserDashboard = () => {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [progresoSemanal, setProgresoSemanal] = useState([]);
+  const [minutosSemanales, setMinutosSemanales] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,7 +35,59 @@ const UserDashboard = () => {
         altura: currentUser.altura || "",
       });
     }
+    cargarProgresoSemanal();
   }, []);
+
+  const cargarProgresoSemanal = async () => {
+    try {
+      const estadisticas = await rutinaService.obtenerEstadisticas();
+      
+      // Obtener rutinas por día y calcular progreso
+      const diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
+      const diasAbreviados = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      
+      const progreso = await Promise.all(
+        diasSemana.map(async (dia, index) => {
+          try {
+            const rutinas = await rutinaService.obtenerRutinasPorDia(dia);
+            const completadas = rutinas.filter(r => r.completado).length;
+            const total = rutinas.length;
+            
+            // Calcular minutos estimados (cada ejercicio = 10 min aprox)
+            const minutosCompletados = completadas * 10;
+            
+            return {
+              dia: diasAbreviados[index],
+              diaCompleto: dia,
+              hizoEjercicio: completadas > 0,
+              completadas: completadas,
+              total: total,
+              minutos: minutosCompletados
+            };
+          } catch (error) {
+            console.error(`Error al cargar rutinas de ${dia}:`, error);
+            return {
+              dia: diasAbreviados[index],
+              diaCompleto: dia,
+              hizoEjercicio: false,
+              completadas: 0,
+              total: 0,
+              minutos: 0
+            };
+          }
+        })
+      );
+      
+      setProgresoSemanal(progreso);
+      
+      // Calcular total de minutos de la semana
+      const totalMinutos = progreso.reduce((sum, dia) => sum + dia.minutos, 0);
+      setMinutosSemanales(totalMinutos);
+      
+    } catch (error) {
+      console.error('Error al cargar progreso semanal:', error);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -115,6 +166,12 @@ const UserDashboard = () => {
     return "Obesidad";
   };
 
+  const formatearTiempo = (minutos) => {
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    return `${horas}h ${mins}m`;
+  };
+
   if (!user) {
     return (
       <div className={`user-dashboard-modern ${darkMode ? "dark" : ""}`}>
@@ -127,16 +184,19 @@ const UserDashboard = () => {
 
   return (
     <div className={`user-dashboard-modern ${darkMode ? "dark" : ""}`}>
-      {/* Header sin botón de tema (ahora está en navbar) */}
+      {/* Header */}
       <div className="dashboard-header-user">
         <div className="header-info">
           <p className="welcome-text">Bienvenido de nuevo,</p>
           <h2 className="user-name">{user.nombre}</h2>
         </div>
         <div className="header-actions">
+          {/* ✅ CAMBIO AQUÍ: Avatar ahora navega al perfil en lugar de abrir modal */}
           <div
             className="user-avatar clickable"
-            onClick={() => setEditMode(true)}
+            onClick={() => navigate('/perfil')}
+            title="Ver mi perfil"
+            style={{ cursor: 'pointer' }}
           >
             <span className="avatar-initials">
               {user.nombre?.charAt(0)}
@@ -151,102 +211,7 @@ const UserDashboard = () => {
         <div className={`alert-message ${message.type}`}>{message.text}</div>
       )}
 
-      {/* Modal de edición */}
-      {editMode && (
-        <div className="modal-overlay" onClick={() => setEditMode(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Editar Perfil</h3>
-              <button onClick={() => setEditMode(false)} className="close-btn">
-                <span className="material-icons">close</span>
-              </button>
-            </div>
-            <form onSubmit={handleUpdate} className="edit-form">
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Nombre</label>
-                  <input
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    required
-                    minLength="3"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Apellido</label>
-                  <input
-                    type="text"
-                    name="apellido"
-                    value={formData.apellido}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-field">
-                <label>Teléfono</label>
-                <input
-                  type="tel"
-                  name="telefono"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Peso (kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="peso"
-                    value={formData.peso}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Altura (m)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="altura"
-                    value={formData.altura}
-                    onChange={handleChange}
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setEditMode(false)}
-                  className="btn-cancel"
-                >
-                  Cancelar
-                </button>
-                <button type="submit" disabled={loading} className="btn-save">
-                  {loading ? "Guardando..." : "Guardar Cambios"}
-                </button>
-              </div>
-
-              <div className="danger-zone-modal">
-                <p>¿Deseas eliminar tu cuenta?</p>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="btn-delete"
-                >
-                  Eliminar Cuenta
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ✅ ELIMINADO: Modal de edición, ya no se usa en dashboard */}
 
       {/* Grid de estadísticas */}
       <div className="stats-grid">
@@ -323,71 +288,52 @@ const UserDashboard = () => {
         </div>
       </div>
 
-      {/* Progreso Semanal */}
+      {/* Progreso Semanal - CON DATOS REALES */}
       <div className="weekly-card">
         <div className="weekly-header">
           <h3 className="weekly-title">Progreso Semanal</h3>
           <p className="weekly-subtitle">Total minutos esta semana</p>
-          <span className="weekly-time">0h 0m</span>
+          <span className="weekly-time">{formatearTiempo(minutosSemanales)}</span>
         </div>
 
         <div className="weekly-progress">
-          {[
-            { dia: "Mon", hizoEjercicio: false },
-            { dia: "Tue", hizoEjercicio: false },
-            { dia: "Wed", hizoEjercicio: false },
-            { dia: "Thu", hizoEjercicio: false },
-            { dia: "Fri", hizoEjercicio: false },
-            { dia: "Sat", hizoEjercicio: false },
-            { dia: "Sun", hizoEjercicio: false },
-          ].map((dia, index) => (
-            <div key={index} className="dia-columna">
+          {progresoSemanal.map((dia, index) => (
+            <div 
+              key={index} 
+              className="dia-columna"
+              onClick={() => navigate('/rutinas')}
+              style={{ cursor: 'pointer' }}
+              title={`${dia.diaCompleto}: ${dia.completadas}/${dia.total} ejercicios completados`}
+            >
               <div
                 className={`dia-circulo ${dia.hizoEjercicio ? "activo" : ""}`}
-              />
+              >
+                {dia.hizoEjercicio && (
+                  <span className="material-icons check-icon">check</span>
+                )}
+              </div>
               <span
                 className={`dia-texto ${dia.hizoEjercicio ? "activo" : ""}`}
               >
                 {dia.dia}
               </span>
+              {dia.total > 0 && (
+                <span className="dia-count">
+                  {dia.completadas}/{dia.total}
+                </span>
+              )}
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Quick Access */}
-      <div className="quick-access-section">
-        <div className="quick-card" onClick={() => navigate('/ejercicios')}>
-          <div
-            className="quick-card-image"
-            style={{ backgroundImage: `url(${rutinasImg})` }}
-          />
-          <div className="quick-card-content">
-            <p className="quick-card-title">Mis Rutinas</p>
-            <p className="quick-card-subtitle">Gestionar planes</p>
-          </div>
-        </div>
-
-        <div className="quick-card" onClick={() => navigate('/estadisticas')}>
-          <div
-            className="quick-card-image"
-            style={{ backgroundImage: `url(${estadisticasImg})` }}
-          />
-          <div className="quick-card-content">
-            <p className="quick-card-title">Estadísticas</p>
-            <p className="quick-card-subtitle">Ver progreso</p>
-          </div>
-        </div>
-
-        <div className="quick-card">
-          <div
-            className="quick-card-image"
-            style={{ backgroundImage: `url(${nutricionImg})` }}
-          />
-          <div className="quick-card-content">
-            <p className="quick-card-title">Nutrición</p>
-            <p className="quick-card-subtitle">Próximamente</p>
-          </div>
+        <div className="weekly-footer">
+          <button 
+            className="btn-ver-rutinas"
+            onClick={() => navigate('/rutinas')}
+          >
+            <span className="material-icons">calendar_today</span>
+            Ver mis rutinas
+          </button>
         </div>
       </div>
     </div>

@@ -14,14 +14,17 @@ function EjerciciosLista({ ejercicios, onSelect, isAdmin, onNuevo, onEditar, onE
         <h2 className="titulo">Ejercicios</h2>
         
         {isAdmin && (
-          <button className="btn-nuevo-ejercicio" onClick={onNuevo}>
+          <button 
+            className="btn-nuevo-ejercicio" 
+            onClick={onNuevo}
+            type="button"
+          >
             <span className="material-icons">add</span>
             Nuevo Ejercicio
           </button>
         )}
       </div>
 
-      {/* Barra de búsqueda */}
       <input
         className="search"
         type="text"
@@ -40,14 +43,8 @@ function EjerciciosLista({ ejercicios, onSelect, isAdmin, onNuevo, onEditar, onE
               ejercicio={e}
               onClick={() => onSelect(e)}
               isAdmin={isAdmin}
-              onEditar={(event) => {
-                event.stopPropagation();
-                onEditar(e);
-              }}
-              onEliminar={(event) => {
-                event.stopPropagation();
-                onEliminar(e);
-              }}
+              onEditar={onEditar}
+              onEliminar={onEliminar}
             />
           ))}
         </div>

@@ -92,7 +92,6 @@ const authService = {
     return localStorage.getItem('nombre');
   },
 
-  // ✅ MÉTODO FALTANTE
   getCurrentUser: () => {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
@@ -120,9 +119,20 @@ const authService = {
 
   updatePerfil: async (email, datos) => {
     try {
+      console.log('📤 Actualizando perfil usuario:', email);
       const response = await api.put(`/usuarios/perfil?email=${email}`, datos);
+      
+      // ✅ Actualizar localStorage con los datos nuevos
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = { ...currentUser, ...response.data };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        console.log('✅ Usuario actualizado en localStorage');
+      }
+      
       return response.data;
     } catch (error) {
+      console.error('❌ Error al actualizar perfil:', error.response?.data || error.message);
       throw error.response?.data || 'Error al actualizar perfil';
     }
   },
@@ -143,20 +153,49 @@ const authService = {
 
   updateAdminPerfil: async (email, datos) => {
     try {
+      console.log('📤 Actualizando perfil admin:', email);
       const response = await api.put(`/administradores/perfil?email=${email}`, datos);
+      
+      // ✅ Actualizar localStorage con los datos nuevos
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = { ...currentUser, ...response.data };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        console.log('✅ Administrador actualizado en localStorage');
+      }
+      
       return response.data;
     } catch (error) {
+      console.error('❌ Error al actualizar admin:', error.response?.data || error.message);
       throw error.response?.data || 'Error al actualizar admin';
     }
   },
 
-  deleteAdminPerfil: async (email) => {
+  /* =========================
+     CAMBIAR CONTRASEÑA
+  ========================== */
+
+  cambiarContrasenaUsuario: async (email, passwords) => {
     try {
-      const response = await api.delete(`/administradores/perfil?email=${email}`);
-      authService.logout();
+      console.log('🔒 Cambiando contraseña de usuario:', email);
+      const response = await api.put(`/usuarios/cambiar-contrasena?email=${email}`, passwords);
+      console.log('✅ Contraseña cambiada exitosamente');
       return response.data;
     } catch (error) {
-      throw error.response?.data || 'Error al eliminar admin';
+      console.error('❌ Error al cambiar contraseña:', error.response?.data || error.message);
+      throw error.response?.data || { error: 'Error al cambiar contraseña' };
+    }
+  },
+
+  cambiarContrasenaAdmin: async (email, passwords) => {
+    try {
+      console.log('🔒 Cambiando contraseña de administrador:', email);
+      const response = await api.put(`/administradores/cambiar-contrasena?email=${email}`, passwords);
+      console.log('✅ Contraseña cambiada exitosamente');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error al cambiar contraseña:', error.response?.data || error.message);
+      throw error.response?.data || { error: 'Error al cambiar contraseña' };
     }
   }
 };

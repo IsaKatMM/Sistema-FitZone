@@ -24,10 +24,19 @@ const GlobalNavbar = () => {
     }
   };
 
+  // ✅ Función para ir al perfil según el rol
+  const handleGoToProfile = () => {
+    setShowMenu(false);
+    if (isAdmin) {
+      navigate("/admin/perfil");
+    } else {
+      navigate("/perfil");
+    }
+  };
+
   return (
     <nav className={`global-navbar ${darkMode ? "dark" : ""}`}>
       <div className="navbar-container">
-
         {/* LOGO */}
         <div
           className="navbar-brand"
@@ -41,7 +50,6 @@ const GlobalNavbar = () => {
 
         {/* LINKS */}
         <div className="navbar-links">
-
           {/* Dashboard - Para todos */}
           <button
             className={`nav-link ${
@@ -57,7 +65,7 @@ const GlobalNavbar = () => {
             Dashboard
           </button>
 
-          {/* Ejercicios - Rutas diferentes para Admin y Usuario */}
+          {/* Ejercicios - Para todos */}
           <button
             className={`nav-link ${
               isActive("/admin/ejercicios") || isActive("/ejercicios") ? "active" : ""
@@ -68,7 +76,16 @@ const GlobalNavbar = () => {
             Ejercicios
           </button>
 
-          {/* ✅ SOLO USUARIOS - Rutinas */}
+          {/* Recetas - Para todos */}
+          <button
+            className={`nav-link ${isActive("/recetas") ? "active" : ""}`}
+            onClick={() => navigate("/recetas")}
+          >
+            <span className="material-icons">restaurant_menu</span>
+            Recetas
+          </button>
+
+          {/* SOLO USUARIOS - Rutinas */}
           {!isAdmin && (
             <button
               className={`nav-link ${isActive("/rutinas") ? "active" : ""}`}
@@ -79,18 +96,7 @@ const GlobalNavbar = () => {
             </button>
           )}
 
-          {/* ✅ SOLO USUARIOS - Recetas */}
-          {!isAdmin && (
-            <button
-              className={`nav-link ${isActive("/recetas") ? "active" : ""}`}
-              onClick={() => navigate("/recetas")}
-            >
-              <span className="material-icons">restaurant_menu</span>
-              Recetas
-            </button>
-          )}
-
-          {/* ✅ SOLO USUARIOS - Estadísticas */}
+          {/* SOLO USUARIOS - Estadísticas */}
           {!isAdmin && (
             <button
               className={`nav-link ${isActive("/estadisticas") ? "active" : ""}`}
@@ -101,7 +107,7 @@ const GlobalNavbar = () => {
             </button>
           )}
 
-          {/* ✅ SOLO ADMIN - Usuarios */}
+          {/* SOLO ADMIN - Usuarios */}
           {isAdmin && (
             <button
               className={`nav-link ${isActive("/admin/usuarios") ? "active" : ""}`}
@@ -120,6 +126,7 @@ const GlobalNavbar = () => {
           </button>
 
           <div className="user-menu">
+            {/* Avatar abre el menú desplegable como antes */}
             <div
               className="user-avatar"
               onClick={() => setShowMenu(!showMenu)}
@@ -135,7 +142,9 @@ const GlobalNavbar = () => {
                 <div className="user-info">
                   <p className="user-name">{user.nombre} {user.apellido}</p>
                   <p className="user-email">{user.correo}</p>
-                  <span className={`user-role ${isAdmin ? "admin" : "user"}`}>{user.rol}</span>
+                  <span className={`user-role ${isAdmin ? "admin" : "user"}`}>
+                    {user.rol}
+                  </span>
                 </div>
 
                 <div className="menu-divider"></div>
@@ -155,13 +164,17 @@ const GlobalNavbar = () => {
 
                 <div className="menu-divider"></div>
 
-                <button className="menu-item" onClick={() => navigate("/perfil")}>
+                {/* ✅ Mi Perfil - Redirige según el rol */}
+                <button className="menu-item" onClick={handleGoToProfile}>
                   <span className="material-icons">person</span>
                   Mi Perfil
                 </button>
 
                 {isAdmin && (
-                  <button className="menu-item" onClick={() => navigate("/admin/usuarios")}>
+                  <button className="menu-item" onClick={() => {
+                    setShowMenu(false);
+                    navigate("/admin/usuarios");
+                  }}>
                     <span className="material-icons">group</span>
                     Gestionar Usuarios
                   </button>

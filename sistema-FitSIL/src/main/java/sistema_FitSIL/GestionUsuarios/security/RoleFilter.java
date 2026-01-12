@@ -17,7 +17,10 @@ public class RoleFilter extends OncePerRequestFilter {
             "/usuarios/login",
             "/auth/login",
             "/administradores/login",
-            "/administradores/registro"
+            "/administradores/registro",
+            "/ejercicios/obtener",
+            "/ejercicios/buscar",
+            "/ejercicios/imagen"  // ✅ AGREGAR ESTA LÍNEA
     );
 
     @Override
@@ -34,7 +37,6 @@ public class RoleFilter extends OncePerRequestFilter {
             return;
         }
 
-        
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);

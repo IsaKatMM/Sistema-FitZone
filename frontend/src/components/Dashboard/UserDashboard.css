@@ -1066,3 +1066,75 @@
 .user-dashboard-modern.dark .dia-texto.activo {
   color: #ffffff;
 }
+
+/* ============================= */
+/*   DETALLES PROGRESO SEMANAL   */
+/* ============================= */
+
+/* Check icon dentro del día activo */
+.check-icon {
+  font-size: 1.2rem;
+  color: white;
+}
+
+/* Contador de ejercicios (3/5) */
+.dia-count {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.user-dashboard-modern.dark .dia-count {
+  color: #94a3b8;
+}
+
+/* Hover efecto en columnas */
+.dia-columna:hover .dia-circulo {
+  transform: translateY(-3px);
+  opacity: 0.9;
+}
+
+/* ============================= */
+/*        FOOTER SEMANAL         */
+/* ============================= */
+
+.weekly-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-ver-rutinas {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f97316;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-ver-rutinas .material-icons {
+  font-size: 1rem;
+}
+
+.btn-ver-rutinas:hover {
+  background: #ea580c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(249, 115, 22, 0.35);
+}
+
+/* 🌙 MODO OSCURO */
+.user-dashboard-modern.dark .btn-ver-rutinas {
+  background: #3b82f6;
+}
+
+.user-dashboard-modern.dark .btn-ver-rutinas:hover {
+  background: #2563eb;
+  box-shadow: 0 6px 14px rgba(59, 130, 246, 0.4);
+}

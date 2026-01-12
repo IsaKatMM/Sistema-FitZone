@@ -1,201 +1,292 @@
-// src/components/Rutinas/RutinasDia.jsx
-import React, { useState } from 'react';
+// src/components/Rutinas/RutinasDia.jsx - SIN BOTÓN DE AGREGAR
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import rutinaService from '../../services/rutinaService';
 import './RutinasDia.css';
 
 const RutinasDia = () => {
   const { darkMode } = useTheme();
-  const [completedExercises, setCompletedExercises] = useState([]);
+  const navigate = useNavigate();
+  const [diaSeleccionado, setDiaSeleccionado] = useState('LUNES');
+  const [rutinas, setRutinas] = useState([]);
+  const [estadisticas, setEstadisticas] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showModalEstadisticas, setShowModalEstadisticas] = useState(false);
 
-  // Datos de ejemplo de la rutina del día
-  const rutinaDelDia = {
-    fecha: new Date().toLocaleDateString('es-ES', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }),
-    nombre: 'Entrenamiento de Fuerza - Día 3',
-    duracion: '45 min',
-    nivel: 'Intermedio',
-    ejercicios: [
-      {
-        id: 1,
-        nombre: 'Press de Banca',
-        series: 4,
-        repeticiones: 12,
-        descanso: '90s',
-        icono: 'fitness_center',
-        musculo: 'Pecho'
-      },
-      {
-        id: 2,
-        nombre: 'Sentadillas',
-        series: 4,
-        repeticiones: 15,
-        descanso: '120s',
-        icono: 'accessibility',
-        musculo: 'Piernas'
-      },
-      {
-        id: 3,
-        nombre: 'Dominadas',
-        series: 3,
-        repeticiones: 10,
-        descanso: '90s',
-        icono: 'sports_gymnastics',
-        musculo: 'Espalda'
-      },
-      {
-        id: 4,
-        nombre: 'Press Militar',
-        series: 3,
-        repeticiones: 12,
-        descanso: '90s',
-        icono: 'sports',
-        musculo: 'Hombros'
-      },
-      {
-        id: 5,
-        nombre: 'Curl de Bíceps',
-        series: 3,
-        repeticiones: 15,
-        descanso: '60s',
-        icono: 'strong',
-        musculo: 'Brazos'
-      },
-      {
-        id: 6,
-        nombre: 'Plancha',
-        series: 3,
-        repeticiones: '60s',
-        descanso: '60s',
-        icono: 'self_improvement',
-        musculo: 'Core'
-      }
-    ]
+  const diasSemana = [
+    { key: 'LUNES', label: 'Lunes', icono: '💪' },
+    { key: 'MARTES', label: 'Martes', icono: '🔥' },
+    { key: 'MIERCOLES', label: 'Miércoles', icono: '⚡' },
+    { key: 'JUEVES', label: 'Jueves', icono: '🎯' },
+    { key: 'VIERNES', label: 'Viernes', icono: '💯' },
+    { key: 'SABADO', label: 'Sábado', icono: '🏆' },
+    { key: 'DOMINGO', label: 'Domingo', icono: '✨' }
+  ];
+
+  useEffect(() => {
+    cargarRutinas();
+    cargarEstadisticas();
+  }, [diaSeleccionado]);
+
+  const cargarRutinas = async () => {
+    setLoading(true);
+    try {
+      const data = await rutinaService.obtenerRutinasPorDia(diaSeleccionado);
+      setRutinas(data);
+      console.log('✅ Rutinas cargadas:', data);
+    } catch (error) {
+      console.error('Error al cargar rutinas:', error);
+      alert('Error al cargar las rutinas: ' + error);
+    }
+    setLoading(false);
   };
 
-  const toggleExerciseComplete = (id) => {
-    if (completedExercises.includes(id)) {
-      setCompletedExercises(completedExercises.filter(exerciseId => exerciseId !== id));
-    } else {
-      setCompletedExercises([...completedExercises, id]);
+  const cargarEstadisticas = async () => {
+    try {
+      const stats = await rutinaService.obtenerEstadisticas();
+      setEstadisticas(stats);
+      console.log('✅ Estadísticas cargadas:', stats);
+    } catch (error) {
+      console.error('Error al cargar estadísticas:', error);
     }
   };
 
-  const progreso = (completedExercises.length / rutinaDelDia.ejercicios.length) * 100;
+  const toggleCompletado = async (rutinaId) => {
+    try {
+      await rutinaService.toggleCompletada(rutinaId);
+      
+      // Actualizar la lista localmente
+      setRutinas(rutinas.map(rutina => 
+        rutina.id === rutinaId 
+          ? { ...rutina, completado: !rutina.completado }
+          : rutina
+      ));
+      
+      cargarEstadisticas();
+    } catch (error) {
+      console.error('Error al marcar como completado:', error);
+      alert('Error al actualizar: ' + error.message);
+    }
+  };
+
+  const eliminarRutina = async (rutinaId) => {
+    if (window.confirm('¿Eliminar este ejercicio de la rutina?')) {
+      try {
+        await rutinaService.eliminarRutina(rutinaId);
+        cargarRutinas();
+        cargarEstadisticas();
+        alert('✅ Rutina eliminada');
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        alert('Error al eliminar: ' + error);
+      }
+    }
+  };
+
+  const progresoDia = rutinas.length > 0 
+    ? Math.round((rutinas.filter(r => r.completado).length / rutinas.length) * 100)
+    : 0;
 
   return (
     <div className={`rutina-dia-container ${darkMode ? 'dark' : ''}`}>
+      
       {/* Header */}
       <div className="rutina-header">
         <div className="rutina-title">
           <span className="material-icons rutina-icon">calendar_today</span>
           <div>
-            <h1>Rutina del Día</h1>
-            <p className="rutina-fecha">{rutinaDelDia.fecha}</p>
+            <h1>Mis Rutinas Semanales</h1>
+            <p className="rutina-fecha">
+              {new Date().toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
           </div>
         </div>
         <div className="rutina-stats">
-          <div className="stat-badge">
-            <span className="material-icons">schedule</span>
-            {rutinaDelDia.duracion}
-          </div>
-          <div className="stat-badge">
-            <span className="material-icons">trending_up</span>
-            {rutinaDelDia.nivel}
-          </div>
+          <button 
+            className="stat-badge clickable"
+            onClick={() => setShowModalEstadisticas(true)}
+          >
+            <span className="material-icons">bar_chart</span>
+            Estadísticas
+          </button>
         </div>
+      </div>
+
+      {/* Selector de Días */}
+      <div className="dias-selector">
+        {diasSemana.map(dia => (
+          <button
+            key={dia.key}
+            className={`dia-btn ${diaSeleccionado === dia.key ? 'active' : ''}`}
+            onClick={() => setDiaSeleccionado(dia.key)}
+          >
+            <span className="dia-emoji">{dia.icono}</span>
+            <span className="dia-label">{dia.label}</span>
+          </button>
+        ))}
       </div>
 
       {/* Progress Bar */}
       <div className="progress-section">
         <div className="progress-info">
-          <span className="progress-label">Progreso del Día</span>
-          <span className="progress-percentage">{Math.round(progreso)}%</span>
+          <span className="progress-label">
+            Progreso del {diasSemana.find(d => d.key === diaSeleccionado)?.label}
+          </span>
+          <span className="progress-percentage">{progresoDia}%</span>
         </div>
         <div className="progress-bar">
           <div 
             className="progress-fill" 
-            style={{ width: `${progreso}%` }}
+            style={{ width: `${progresoDia}%` }}
           ></div>
         </div>
         <p className="progress-text">
-          {completedExercises.length} de {rutinaDelDia.ejercicios.length} ejercicios completados
+          {rutinas.filter(r => r.completado).length} de {rutinas.length} ejercicios completados
         </p>
       </div>
 
-      {/* Exercise List */}
-      <div className="ejercicios-list">
-        {rutinaDelDia.ejercicios.map((ejercicio) => {
-          const isCompleted = completedExercises.includes(ejercicio.id);
-          
-          return (
-            <div 
-              key={ejercicio.id} 
-              className={`ejercicio-card ${isCompleted ? 'completed' : ''}`}
-            >
-              <div className="ejercicio-checkbox">
-                <input 
-                  type="checkbox"
-                  checked={isCompleted}
-                  onChange={() => toggleExerciseComplete(ejercicio.id)}
-                  id={`ejercicio-${ejercicio.id}`}
-                />
-                <label htmlFor={`ejercicio-${ejercicio.id}`}></label>
-              </div>
+      {/* ✅ ELIMINADO: Botón "Agregar Ejercicio desde Catálogo" */}
 
-              <div className="ejercicio-icon">
-                <span className="material-icons">{ejercicio.icono}</span>
-              </div>
-
-              <div className="ejercicio-info">
-                <h3>{ejercicio.nombre}</h3>
-                <span className="musculo-tag">{ejercicio.musculo}</span>
-              </div>
-
-              <div className="ejercicio-details">
-                <div className="detail-item">
-                  <span className="material-icons">repeat</span>
-                  <span>{ejercicio.series} series</span>
+      {/* Lista de Rutinas */}
+      {loading ? (
+        <div className="loading-state">
+          <span className="material-icons rotating">refresh</span>
+          <p>Cargando rutinas...</p>
+        </div>
+      ) : rutinas.length === 0 ? (
+        <div className="empty-state">
+          <span className="material-icons">fitness_center</span>
+          <h3>No hay ejercicios para {diasSemana.find(d => d.key === diaSeleccionado)?.label}</h3>
+          <p>Ve a la sección <strong>Ejercicios</strong> y selecciona "Agregar a Rutina" en los ejercicios que desees incluir</p>
+          {/* ✅ ELIMINADO: Botón "Ir a Ejercicios" del estado vacío */}
+        </div>
+      ) : (
+        <div className="ejercicios-list">
+          {rutinas.map((rutina) => {
+            const isCompleted = rutina.completado;
+            
+            return (
+              <div 
+                key={rutina.id} 
+                className={`ejercicio-card ${isCompleted ? 'completed' : ''}`}
+              >
+                <div className="ejercicio-checkbox">
+                  <input 
+                    type="checkbox"
+                    checked={isCompleted}
+                    onChange={() => toggleCompletado(rutina.id)}
+                    id={`ejercicio-${rutina.id}`}
+                  />
+                  <label htmlFor={`ejercicio-${rutina.id}`}></label>
                 </div>
-                <div className="detail-item">
+
+                <div className="ejercicio-icon">
                   <span className="material-icons">fitness_center</span>
-                  <span>{ejercicio.repeticiones} reps</span>
                 </div>
-                <div className="detail-item">
-                  <span className="material-icons">timer</span>
-                  <span>{ejercicio.descanso}</span>
-                </div>
-              </div>
 
-              <button className="btn-detalles">
-                <span className="material-icons">info</span>
+                <div className="ejercicio-info">
+                  <h3>{rutina.ejercicio?.nombre || 'Ejercicio'}</h3>
+                  <span className="musculo-tag">
+                    {rutina.ejercicio?.musculoTrabajado || 'General'}
+                  </span>
+                </div>
+
+                <div className="ejercicio-details">
+                  <div className="detail-item">
+                    <span className="material-icons">repeat</span>
+                    <span>{rutina.series} series</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="material-icons">fitness_center</span>
+                    <span>{rutina.repeticiones} reps</span>
+                  </div>
+                  {rutina.peso > 0 && (
+                    <div className="detail-item">
+                      <span className="material-icons">monitor_weight</span>
+                      <span>{rutina.peso} kg</span>
+                    </div>
+                  )}
+                </div>
+
+                {rutina.notas && (
+                  <div className="ejercicio-notas">
+                    📝 {rutina.notas}
+                  </div>
+                )}
+
+                <button 
+                  className="btn-eliminar"
+                  onClick={() => eliminarRutina(rutina.id)}
+                >
+                  <span className="material-icons">delete</span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal Estadísticas */}
+      {showModalEstadisticas && estadisticas && (
+        <div className="modal-overlay" onClick={() => setShowModalEstadisticas(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Estadísticas de Rutinas</h3>
+              <button onClick={() => setShowModalEstadisticas(false)} className="close-btn">
+                <span className="material-icons">close</span>
               </button>
             </div>
-          );
-        })}
-      </div>
 
-      {/* Action Buttons */}
-      <div className="rutina-actions">
-        {progreso === 100 ? (
-          <button className="btn-primary success">
-            <span className="material-icons">check_circle</span>
-            ¡Rutina Completada!
-          </button>
-        ) : (
-          <button className="btn-primary">
-            <span className="material-icons">play_arrow</span>
-            Comenzar Entrenamiento
-          </button>
-        )}
-        <button className="btn-secondary">
-          <span className="material-icons">history</span>
-          Ver Historial
-        </button>
-      </div>
+            <div className="estadisticas-content">
+              <div className="stat-card-large">
+                <span className="material-icons stat-icon-large">assignment</span>
+                <div className="stat-info-large">
+                  <h4>Total Rutinas</h4>
+                  <p className="stat-value-large">{estadisticas.totalRutinas || 0}</p>
+                </div>
+              </div>
+
+              <div className="stat-card-large">
+                <span className="material-icons stat-icon-large success">check_circle</span>
+                <div className="stat-info-large">
+                  <h4>Completadas</h4>
+                  <p className="stat-value-large success">{estadisticas.completadas || 0}</p>
+                </div>
+              </div>
+
+              <div className="stat-card-large">
+                <span className="material-icons stat-icon-large warning">pending</span>
+                <div className="stat-info-large">
+                  <h4>Pendientes</h4>
+                  <p className="stat-value-large warning">{estadisticas.pendientes || 0}</p>
+                </div>
+              </div>
+
+              <div className="stat-card-large highlight">
+                <span className="material-icons stat-icon-large">analytics</span>
+                <div className="stat-info-large">
+                  <h4>Progreso Total</h4>
+                  <p className="stat-value-large">{estadisticas.porcentajeCompletado || 0}%</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="progress-bar-large">
+              <div 
+                className="progress-fill-large" 
+                style={{ width: `${estadisticas.porcentajeCompletado || 0}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
