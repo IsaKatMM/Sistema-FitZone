@@ -15,13 +15,13 @@ const RutinasDia = () => {
   const [showModalEstadisticas, setShowModalEstadisticas] = useState(false);
 
   const diasSemana = [
-    { key: 'LUNES', label: 'Lunes', icono: '💪' },
-    { key: 'MARTES', label: 'Martes', icono: '🔥' },
-    { key: 'MIERCOLES', label: 'Miércoles', icono: '⚡' },
-    { key: 'JUEVES', label: 'Jueves', icono: '🎯' },
-    { key: 'VIERNES', label: 'Viernes', icono: '💯' },
-    { key: 'SABADO', label: 'Sábado', icono: '🏆' },
-    { key: 'DOMINGO', label: 'Domingo', icono: '✨' }
+    { key: 'LUNES', label: 'Lunes', icono: 'L' },
+    { key: 'MARTES', label: 'Martes', icono: 'M' },
+    { key: 'MIERCOLES', label: 'Miércoles', icono: 'M' },
+    { key: 'JUEVES', label: 'Jueves', icono: 'J' },
+    { key: 'VIERNES', label: 'Viernes', icono: 'V' },
+    { key: 'SABADO', label: 'Sábado', icono: 'S' },
+    { key: 'DOMINGO', label: 'Domingo', icono: 'D' }
   ];
 
   useEffect(() => {
