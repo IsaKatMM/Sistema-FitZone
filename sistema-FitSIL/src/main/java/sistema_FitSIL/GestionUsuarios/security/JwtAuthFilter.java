@@ -34,7 +34,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         "/auth/login",
         "/ejercicios/obtener",
         "/ejercicios/buscar",
-        "/ejercicios/imagen"  // ✅ AGREGAR ESTA LÍNEA
+        "/ejercicios/imagen",
+        "/recetas"              // ✅ AGREGADO
     );
 
     @Override
@@ -44,9 +45,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
+        
+        // ✅ Log para debug
+        System.out.println("🔍 Path solicitado: " + path);
+        System.out.println("🔑 Authorization header: " + request.getHeader("Authorization"));
 
         // ✅ Rutas públicas → no validar JWT
         if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
+            System.out.println("✅ Ruta pública, permitiendo acceso sin token");
             filterChain.doFilter(request, response);
             return;
         }
@@ -54,6 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("⚠️ Sin token de autorización");
             filterChain.doFilter(request, response);
             return;
         }
@@ -61,12 +68,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             String token = authHeader.substring(7);
             String correo = jwtService.obtenerCorreoDesdeToken(token);
+            
+            System.out.println("📧 Correo extraído del token: " + correo);
 
             if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
 
                 if (jwtService.validarToken(token, correo)) {
+                    System.out.println("✅ Token válido para: " + correo);
+                    
                     UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -79,10 +90,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     );
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    System.out.println("❌ Token inválido para: " + correo);
                 }
             }
         } catch (Exception e) {
             System.err.println("❌ Error en JwtAuthFilter: " + e.getMessage());
+            e.printStackTrace();
         }
 
         filterChain.doFilter(request, response);

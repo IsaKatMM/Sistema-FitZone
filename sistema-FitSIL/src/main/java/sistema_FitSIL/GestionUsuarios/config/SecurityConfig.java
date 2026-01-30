@@ -49,7 +49,9 @@ public class SecurityConfig {
                     "/administradores/login",
                     "/ejercicios/obtener",
                     "/ejercicios/buscar",
-                    "/ejercicios/imagen/**"
+                    "/ejercicios/imagen/**",
+                    "/recetas",                    // ✅ AGREGADO
+                    "/recetas/**"                  // ✅ AGREGADO
                 ).permitAll()
 
                 // ========================================
@@ -73,8 +75,8 @@ public class SecurityConfig {
                 // ✅ RUTAS DE NOTIFICACIONES - ADMIN (solo administradores)
                 // ========================================
                 .requestMatchers(
-                    "/api/admin/notificaciones",          // ✅ CAMBIADO
-                    "/api/admin/notificaciones/**"        // ✅ CAMBIADO
+                    "/api/admin/notificaciones",
+                    "/api/admin/notificaciones/**"
                 ).hasAuthority("ROLE_ADMINISTRADOR")
 
                 // ========================================
@@ -121,7 +123,6 @@ public class SecurityConfig {
 
                 // ========================================
                 // ✅ RUTAS DE ADMINISTRADOR (solo administradores)
-                // Las rutas /administradores/** que YA EXISTEN
                 // ========================================
                 .requestMatchers(
                     "/administradores/**"
@@ -163,7 +164,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
-            "http://localhost:5173"
+            "http://localhost:5173",
+            "http://localhost:8081",      // ✅ AGREGADO para React Native
+            "http://10.20.141.223:8081"     // ✅ AGREGADO tu IP local
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

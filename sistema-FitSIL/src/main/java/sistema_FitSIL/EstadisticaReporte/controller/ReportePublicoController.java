@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/reportes-publicos")
 @CrossOrigin(origins = "*")
 public class ReportePublicoController {
 
@@ -112,7 +112,7 @@ public class ReportePublicoController {
      * ✅ Marcar notificación como leída
      * PUT /api/notificaciones-usuario/{id}/leer
      */
-    @PutMapping("/notificaciones-usuario/{id}/leer")
+    @PutMapping("/notificaciones/{id}/leer")
     public ResponseEntity<?> marcarNotificacionLeida(
             @PathVariable Long id,
             Authentication auth

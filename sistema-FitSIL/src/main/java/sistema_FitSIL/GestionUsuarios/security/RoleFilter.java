@@ -20,7 +20,8 @@ public class RoleFilter extends OncePerRequestFilter {
             "/administradores/registro",
             "/ejercicios/obtener",
             "/ejercicios/buscar",
-            "/ejercicios/imagen"  // ✅ AGREGAR ESTA LÍNEA
+            "/ejercicios/imagen",
+            "/recetas"              // ✅ AGREGADO
     );
 
     @Override

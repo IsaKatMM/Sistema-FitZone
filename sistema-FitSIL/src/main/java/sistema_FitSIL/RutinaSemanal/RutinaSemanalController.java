@@ -55,7 +55,11 @@ public class RutinaSemanalController {
                 rutinaService.actualizarRutina(rutina.getId(), null, null, null, null, notas);
             }
 
-            return ResponseEntity.ok(rutina);
+            // ✅ ESTANDARIZADO: Mismo formato que los otros endpoints
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Ejercicio agregado a la rutina correctamente",
+                    "rutina", rutina
+            ));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,11 +104,11 @@ public class RutinaSemanalController {
     }
 
     /**
-     * ✅ MEJORADO: Marcar rutina como completada y GENERAR ESTADÍSTICA
+     * ✅ CORREGIDO: Toggle rutina completada (marcar/desmarcar) y generar estadística
      * PUT /api/rutinas/{id}/completar
      */
     @PutMapping("/{id}/completar")
-    public ResponseEntity<?> marcarComoCompletada(
+    public ResponseEntity<?> toggleCompletado(
             @PathVariable Integer id,
             Authentication auth) {
         try {
@@ -119,25 +123,30 @@ public class RutinaSemanalController {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("Rutina no encontrada o no autorizada"));
 
-            // Guardar estado anterior
+            // ✅ Guardar estado ANTES del toggle
             boolean estadoAnterior = rutina.isCompletado();
             
-            // Toggle: cambiar estado
-            boolean nuevoEstado = !estadoAnterior;
-            rutina.setCompletado(nuevoEstado);
-            RutinaSemanal actualizada = rutinaService.marcarComoCompletada(id);
+            // ✅ Hacer el toggle (cambiar al estado opuesto)
+            RutinaSemanal actualizada = rutinaService.toggleCompletado(id);
             
-            // ✅ NUEVO: Si se marca como completado, generar estadística
+            // ✅ Obtener el NUEVO estado DESPUÉS del toggle
+            boolean nuevoEstado = actualizada.isCompletado();
+            
+            System.out.println("📊 Toggle: " + estadoAnterior + " → " + nuevoEstado);
+            
+            // ✅ Solo generar estadística si cambió de false a true
+            boolean estadisticaGenerada = false;
             if (nuevoEstado && !estadoAnterior) {
-                int minutosEstimados = calcularMinutosEstimados(rutina);
+                int minutosEstimados = calcularMinutosEstimados(actualizada);
                 estadisticaService.generarEstadisticaAutomatica(usuario, minutosEstimados);
+                estadisticaGenerada = true;
                 System.out.println("✅ Estadística generada: " + minutosEstimados + " minutos");
             }
             
             return ResponseEntity.ok(Map.of(
                     "mensaje", "Rutina actualizada correctamente",
                     "rutina", actualizada,
-                    "estadisticaGenerada", nuevoEstado && !estadoAnterior
+                    "estadisticaGenerada", estadisticaGenerada
             ));
 
         } catch (Exception e) {
@@ -148,7 +157,7 @@ public class RutinaSemanalController {
     }
 
     /**
-     * ✅ NUEVO: Calcular minutos estimados de un ejercicio
+     * ✅ Calcular minutos estimados de un ejercicio
      * Fórmula: (series * repeticiones * 3 seg) + (series * 60 seg descanso) / 60
      */
     private int calcularMinutosEstimados(RutinaSemanal rutina) {
@@ -164,8 +173,6 @@ public class RutinaSemanalController {
         // Total en minutos
         int totalSegundos = segundosEjecucion + segundosDescanso;
         int minutos = Math.max(1, totalSegundos / 60); // Mínimo 1 minuto
-        
-        System.out.println("📊 Cálculo: " + series + " series x " + repeticiones + " reps = " + minutos + " min");
         
         return minutos;
     }
@@ -201,7 +208,11 @@ public class RutinaSemanalController {
                     id, nuevoDia, series, repeticiones, peso, notas
             );
 
-            return ResponseEntity.ok(actualizada);
+            // ✅ ESTANDARIZADO: Mismo formato
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Rutina actualizada correctamente",
+                    "rutina", actualizada
+            ));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -281,7 +292,7 @@ public class RutinaSemanalController {
     }
 
     /**
-     * ✅ NUEVO: Completar todas las rutinas de un día
+     * ✅ Completar todas las rutinas de un día
      * POST /api/rutinas/completar-dia/{dia}
      */
     @PostMapping("/completar-dia/{dia}")
@@ -301,8 +312,7 @@ public class RutinaSemanalController {
             
             for (RutinaSemanal rutina : rutinas) {
                 if (!rutina.isCompletado()) {
-                    rutina.setCompletado(true);
-                    rutinaService.marcarComoCompletada(rutina.getId());
+                    rutinaService.toggleCompletado(rutina.getId());
                     totalMinutos += calcularMinutosEstimados(rutina);
                     completadas++;
                 }

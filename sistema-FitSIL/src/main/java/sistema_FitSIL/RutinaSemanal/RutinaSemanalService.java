@@ -54,14 +54,24 @@ public class RutinaSemanalService {
         return rutinaRepository.findByUsuarioCorreoAndDiaSemana(correoUsuario, dia);
     }
 
-    // Marcar rutina como completada
+    // ✅ CORREGIDO: Toggle completado (cambiar al estado opuesto)
     @Transactional
-    public RutinaSemanal marcarComoCompletada(Integer rutinaId) {
+    public RutinaSemanal toggleCompletado(Integer rutinaId) {
         RutinaSemanal rutina = rutinaRepository.findById(rutinaId)
                 .orElseThrow(() -> new RuntimeException("Rutina no encontrada"));
         
-        rutina.setCompletado(true);
+        // Toggle: cambiar al estado opuesto
+        rutina.setCompletado(!rutina.isCompletado());
+        
+        System.out.println("🔄 Toggle rutina ID " + rutinaId + ": " + !rutina.isCompletado() + " → " + rutina.isCompletado());
+        
         return rutinaRepository.save(rutina);
+    }
+
+    // ✅ DEPRECATED: Mantener por compatibilidad pero ahora usa toggle
+    @Transactional
+    public RutinaSemanal marcarComoCompletada(Integer rutinaId) {
+        return toggleCompletado(rutinaId);
     }
 
     // Actualizar una rutina
