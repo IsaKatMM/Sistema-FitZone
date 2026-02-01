@@ -2,6 +2,8 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { AuthRepositoryImpl } from '../../data/repositories/AuthRepositoryImpl';
 import { AuthDataSource } from '../../data/datasources/AuthDataSource';
+import { UserRepositoryImpl } from '../../data/repositories/UserRepositoryImpl';
+import { UserDataSource } from '../../data/datasources/UserDataSource';
 import * as SecureStore from 'expo-secure-store';
 
 interface User {
@@ -9,9 +11,11 @@ interface User {
   nombre: string;
   apellido?: string;
   correo: string;
-  rol: string;
+  usuario: string;
+  telefono?: string;
   peso?: number;
   altura?: number;
+  rol: "USUARIO" | "ADMINISTRADOR";
 }
 
 interface AuthContextType {
@@ -21,6 +25,7 @@ interface AuthContextType {
   login: (correo: string, contrasenia: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (correo: string, data: Partial<User>) => Promise<void>;
 }
 
 interface RegisterData {
@@ -37,12 +42,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const authDataSource = new AuthDataSource();
   const authRepository = new AuthRepositoryImpl(authDataSource);
+  
+  const userDataSource = new UserDataSource();
+  const userRepository = new UserRepositoryImpl(userDataSource);
 
-  // ✅ Función mejorada para validar usuario
   const isValidUser = (userData: User | null): boolean => {
     if (!userData) return false;
     
-    // Verificar que tenga datos mínimos requeridos
     const hasValidData = 
       userData.id > 0 &&
       !!userData.nombre && 
@@ -54,27 +60,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return hasValidData;
   };
 
-  // ✅ Cargar usuario al iniciar la app
   useEffect(() => {
     const loadUser = async () => {
       try {
         setLoading(true);
         
-        // Verificar si hay token
         const token = await SecureStore.getItemAsync('userToken');
         
         if (!token) {
-          console.log('❌ No hay token guardado');
           setUser(null);
           setLoading(false);
           return;
         }
 
-        // Obtener datos del usuario guardados
         const userDataStr = await SecureStore.getItemAsync('userData');
         
         if (!userDataStr) {
-          console.log('❌ No hay datos de usuario guardados');
           await SecureStore.deleteItemAsync('userToken');
           setUser(null);
           setLoading(false);
@@ -83,9 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const userData = JSON.parse(userDataStr);
         
-        // ✅ Validar que el usuario tenga datos completos
         if (!isValidUser(userData)) {
-          console.log('❌ Usuario con datos inválidos, limpiando sesión');
           await SecureStore.deleteItemAsync('userToken');
           await SecureStore.deleteItemAsync('userData');
           setUser(null);
@@ -93,12 +92,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        console.log('✅ Usuario válido cargado:', userData.nombre);
         setUser(userData);
         
       } catch (error) {
-        console.error('Error al cargar usuario:', error);
-        // Limpiar todo en caso de error
         await SecureStore.deleteItemAsync('userToken');
         await SecureStore.deleteItemAsync('userData');
         setUser(null);
@@ -114,7 +110,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await authRepository.login(correo, contrasenia);
       
-      // ✅ Validar respuesta del backend
       if (!response || !response.token || !response.usuario) {
         throw new Error('Respuesta inválida del servidor');
       }
@@ -124,52 +119,93 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         nombre: response.usuario.nombre,
         apellido: response.usuario.apellido,
         correo: response.usuario.correo,
+        usuario: response.usuario.usuario || response.usuario.correo,
+        telefono: response.usuario.telefono,
         rol: response.usuario.rol || 'USUARIO',
         peso: response.usuario.peso,
         altura: response.usuario.altura,
       };
 
-      // ✅ Validar antes de guardar
       if (!isValidUser(userData)) {
         throw new Error('Datos de usuario incompletos');
       }
 
-      // Guardar token y datos
       await SecureStore.setItemAsync('userToken', response.token);
       await SecureStore.setItemAsync('userData', JSON.stringify(userData));
       
-      console.log('✅ Login exitoso:', userData.nombre);
       setUser(userData);
       
     } catch (error: any) {
-      console.error('❌ Error en login:', error);
-      // Limpiar cualquier dato residual
       await SecureStore.deleteItemAsync('userToken');
       await SecureStore.deleteItemAsync('userData');
       setUser(null);
-      throw error;
+      
+      // Lanzar errores limpios sin logs
+      if (error.response?.status === 401) {
+        throw new Error('Credenciales incorrectas. Verifica tu correo y contraseña.');
+      } else if (error.response?.status === 404) {
+        throw new Error('Usuario no encontrado. ¿Ya te has registrado?');
+      } else if (error.response?.status === 403) {
+        throw new Error('Acceso denegado. Tu cuenta puede estar inactiva.');
+      } else if (error.response?.status === 500) {
+        throw new Error('Error en el servidor. Inténtalo más tarde.');
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Error al iniciar sesión');
+      }
     }
   };
 
   const register = async (data: RegisterData) => {
     try {
       await authRepository.register(data);
-      console.log('✅ Registro exitoso');
     } catch (error: any) {
-      console.error('❌ Error en registro:', error);
-      throw error;
+      if (error.response?.status === 409) {
+        throw new Error('El correo o usuario ya está registrado');
+      } else if (error.response?.status === 400) {
+        throw new Error(error.response.data?.message || 'Datos inválidos. Verifica la información');
+      } else if (error.response?.status === 500) {
+        throw new Error('Error en el servidor. Inténtalo más tarde');
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Error al registrar usuario');
+      }
+    }
+  };
+
+  const updateUser = async (correo: string, data: Partial<User>) => {
+    try {
+      const updatedUser = await userRepository.updateProfile(correo, data);
+      
+      const newUserData: User = {
+        ...user!,
+        ...updatedUser,
+      };
+      
+      setUser(newUserData);
+      await SecureStore.setItemAsync('userData', JSON.stringify(newUserData));
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('Usuario no encontrado');
+      } else if (error.response?.status === 400) {
+        throw new Error('Datos inválidos. Verifica la información');
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Error al actualizar usuario');
+      }
     }
   };
 
   const logout = async () => {
     try {
-      console.log('🔓 Cerrando sesión...');
       await SecureStore.deleteItemAsync('userToken');
       await SecureStore.deleteItemAsync('userData');
       setUser(null);
-      console.log('✅ Sesión cerrada');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      // Silencioso - no mostrar error en logout
     }
   };
 
@@ -177,11 +213,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: isValidUser(user),  // ✅ Validar antes de retornar
+        isAuthenticated: isValidUser(user),
         loading,
         login,
         register,
         logout,
+        updateUser,
       }}
     >
       {children}

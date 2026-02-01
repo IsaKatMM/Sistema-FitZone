@@ -6,11 +6,11 @@ import {
   TextInput, 
   TouchableOpacity, 
   Alert, 
-  StyleSheet, 
-  Image,
+  StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
@@ -21,15 +21,54 @@ export default function LoginScreen() {
     correo: '',
     contrasenia: ''
   });
+  const [errors, setErrors] = useState({
+    correo: '',
+    contrasenia: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
   const router = useRouter();
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors = {
+      correo: '',
+      contrasenia: ''
+    };
+
+    let isValid = true;
+
+    if (!formData.correo.trim()) {
+      newErrors.correo = 'El correo electrónico es obligatorio';
+      isValid = false;
+    } else if (!validateEmail(formData.correo)) {
+      newErrors.correo = 'Por favor ingresa un correo válido';
+      isValid = false;
+    }
+
+    if (!formData.contrasenia) {
+      newErrors.contrasenia = 'La contraseña es obligatoria';
+      isValid = false;
+    } else if (formData.contrasenia.length < 6) {
+      newErrors.contrasenia = 'La contraseña debe tener al menos 6 caracteres';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleLogin = async () => {
-    if (!formData.correo || !formData.contrasenia) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+    // Limpiar errores anteriores
+    setErrors({ correo: '', contrasenia: '' });
+
+    if (!validateForm()) {
       return;
     }
 
@@ -38,7 +77,34 @@ export default function LoginScreen() {
       await login(formData.correo, formData.contrasenia);
       router.replace('/(main)/home');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Error al iniciar sesión');
+     
+      
+      // Mensajes de error específicos
+      let errorMessage = 'Error al iniciar sesión';
+      
+      if (error.response) {
+        const status = error.response.status;
+        
+        if (status === 401) {
+          errorMessage = 'Credenciales incorrectas. Verifica tu correo y contraseña.';
+        } else if (status === 404) {
+          errorMessage = 'Usuario no encontrado. ¿Ya te has registrado?';
+        } else if (status === 403) {
+          errorMessage = 'Acceso denegado. Tu cuenta puede estar inactiva.';
+        } else if (status === 500) {
+          errorMessage = 'Error en el servidor. Inténtalo más tarde.';
+        } else {
+          errorMessage = error.response.data?.message || 'Error al iniciar sesión';
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert(
+        'Error al iniciar sesión',
+        errorMessage,
+        [{ text: 'OK' }]
+      );
     } finally {
       setLoading(false);
     }
@@ -52,6 +118,7 @@ export default function LoginScreen() {
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         {/* Logo Section */}
         <View style={styles.logoSection}>
@@ -65,32 +132,56 @@ export default function LoginScreen() {
 
         {/* Form */}
         <View style={styles.formContainer}>
+          {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Correo Electrónico</Text>
-            <View style={styles.inputContainer}>
+            <Text style={styles.label}>
+              Correo Electrónico <Text style={styles.required}>*</Text>
+            </Text>
+            <View style={[
+              styles.inputContainer,
+              errors.correo ? styles.inputContainerError : null
+            ]}>
               <Ionicons name="mail-outline" size={20} color="#64748b" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Ingresa tu correo electrónico"
+                placeholder="email@ejemplo.com"
                 value={formData.correo}
-                onChangeText={(text) => setFormData({ ...formData, correo: text })}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, correo: text });
+                  if (errors.correo) setErrors({ ...errors, correo: '' });
+                }}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 editable={!loading}
                 placeholderTextColor="#94a3b8"
               />
             </View>
+            {errors.correo ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#EF4444" />
+                <Text style={styles.errorText}>{errors.correo}</Text>
+              </View>
+            ) : null}
           </View>
 
+          {/* Password */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contraseña</Text>
-            <View style={styles.inputContainer}>
+            <Text style={styles.label}>
+              Contraseña <Text style={styles.required}>*</Text>
+            </Text>
+            <View style={[
+              styles.inputContainer,
+              errors.contrasenia ? styles.inputContainerError : null
+            ]}>
               <Ionicons name="lock-closed-outline" size={20} color="#64748b" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Ingresa tu contraseña"
+                placeholder="Mínimo 6 caracteres"
                 value={formData.contrasenia}
-                onChangeText={(text) => setFormData({ ...formData, contrasenia: text })}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, contrasenia: text });
+                  if (errors.contrasenia) setErrors({ ...errors, contrasenia: '' });
+                }}
                 secureTextEntry={!showPassword}
                 editable={!loading}
                 placeholderTextColor="#94a3b8"
@@ -107,6 +198,12 @@ export default function LoginScreen() {
                 />
               </TouchableOpacity>
             </View>
+            {errors.contrasenia ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#EF4444" />
+                <Text style={styles.errorText}>{errors.contrasenia}</Text>
+              </View>
+            ) : null}
           </View>
 
           <TouchableOpacity 
@@ -114,9 +211,11 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>
-              {loading ? 'Cargando...' : 'Iniciar Sesión'}
-            </Text>
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>Iniciar Sesión</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -183,6 +282,9 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     marginBottom: 8,
   },
+  required: {
+    color: '#EF4444',
+  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -191,6 +293,10 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     borderRadius: 12,
     paddingHorizontal: 16,
+  },
+  inputContainerError: {
+    borderColor: '#EF4444',
+    borderWidth: 2,
   },
   inputIcon: {
     marginRight: 12,
@@ -203,6 +309,16 @@ const styles = StyleSheet.create({
   },
   eyeButton: {
     padding: 8,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 4,
+  },
+  errorText: {
+    fontSize: 13,
+    color: '#EF4444',
   },
   button: {
     backgroundColor: '#FF6B00',

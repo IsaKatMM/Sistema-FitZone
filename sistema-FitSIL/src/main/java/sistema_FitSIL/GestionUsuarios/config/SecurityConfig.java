@@ -165,8 +165,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
             "http://localhost:3000",
             "http://localhost:5173",
-            "http://localhost:8081",      // ✅ AGREGADO para React Native
-            "http://10.20.141.223:8081"     // ✅ AGREGADO tu IP local
+            "http://localhost:8081",      //  React Native
+            "http://192.168.1.3:8081"     //  IP local
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

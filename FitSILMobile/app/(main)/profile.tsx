@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../../src/presentation/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { RoutineDataSource } from '../../src/data/datasources/RoutineDataSource';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 type TabType = 'info' | 'physical' | 'stats' | 'settings';
 
@@ -25,7 +26,7 @@ interface Statistics {
 }
 
 export default function ProfileScreen() {
-  const { user, logout, updateUser } = useAuth(); // ✅ Agregado updateUser
+  const { user, logout, updateUser } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const [editMode, setEditMode] = useState(false);
@@ -78,7 +79,6 @@ export default function ProfileScreen() {
     }
   };
 
-  // ✅ MÉTODO ACTUALIZADO
   const handleUpdate = async () => {
     if (!user?.correo) {
       Alert.alert('Error', 'No se pudo identificar al usuario');
@@ -97,13 +97,11 @@ export default function ProfileScreen() {
 
       console.log('📤 Actualizando perfil:', updatedData);
       
-      // ✅ Usar el método del contexto que actualiza TODO
       await updateUser(user.correo, updatedData);
       
       Alert.alert('✅ Éxito', 'Perfil actualizado correctamente');
       setEditMode(false);
       
-      // Recargar estadísticas
       await cargarEstadisticas();
       
     } catch (error: any) {
@@ -116,7 +114,7 @@ export default function ProfileScreen() {
 
   const handleDelete = () => {
     Alert.alert(
-      '⚠️ Eliminar Cuenta',
+      'Eliminar Cuenta',
       '¿Estás seguro? Esta acción no se puede deshacer.',
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -156,7 +154,7 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#FF6B00" />
           <Text style={styles.backText}>Volver</Text>
         </TouchableOpacity>
       </View>
@@ -170,7 +168,7 @@ export default function ProfileScreen() {
                 {user?.nombre?.charAt(0)}{user?.apellido?.charAt(0) || ''}
               </Text>
               <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedIcon}>✓</Text>
+                <Ionicons name="checkmark" size={14} color="white" />
               </View>
             </View>
           </View>
@@ -181,7 +179,7 @@ export default function ProfileScreen() {
             </Text>
             <Text style={styles.profileEmail}>{user?.correo}</Text>
             <View style={styles.roleBadge}>
-              <Text style={styles.roleIcon}>👤</Text>
+              <Ionicons name="shield-checkmark" size={14} color="#FF6B00" />
               <Text style={styles.roleText}>{user?.rol}</Text>
             </View>
           </View>
@@ -190,7 +188,7 @@ export default function ProfileScreen() {
             style={styles.editButton}
             onPress={() => setEditMode(true)}
           >
-            <Text style={styles.editIcon}>✏️</Text>
+            <Ionicons name="create-outline" size={18} color="white" />
             <Text style={styles.editText}>Editar Perfil</Text>
           </TouchableOpacity>
         </View>
@@ -201,7 +199,11 @@ export default function ProfileScreen() {
             style={[styles.tab, activeTab === 'info' && styles.tabActive]}
             onPress={() => setActiveTab('info')}
           >
-            <Text style={styles.tabIcon}>👤</Text>
+            <Ionicons 
+              name={activeTab === 'info' ? "person" : "person-outline"} 
+              size={20} 
+              color={activeTab === 'info' ? '#FF6B00' : '#64748b'} 
+            />
             <Text style={[styles.tabText, activeTab === 'info' && styles.tabTextActive]}>
               Info
             </Text>
@@ -211,7 +213,11 @@ export default function ProfileScreen() {
             style={[styles.tab, activeTab === 'physical' && styles.tabActive]}
             onPress={() => setActiveTab('physical')}
           >
-            <Text style={styles.tabIcon}>💪</Text>
+            <Ionicons 
+              name={activeTab === 'physical' ? "fitness" : "fitness-outline"} 
+              size={20} 
+              color={activeTab === 'physical' ? '#FF6B00' : '#64748b'} 
+            />
             <Text style={[styles.tabText, activeTab === 'physical' && styles.tabTextActive]}>
               Físico
             </Text>
@@ -221,7 +227,11 @@ export default function ProfileScreen() {
             style={[styles.tab, activeTab === 'stats' && styles.tabActive]}
             onPress={() => setActiveTab('stats')}
           >
-            <Text style={styles.tabIcon}>📊</Text>
+            <Ionicons 
+              name={activeTab === 'stats' ? "stats-chart" : "stats-chart-outline"} 
+              size={20} 
+              color={activeTab === 'stats' ? '#FF6B00' : '#64748b'} 
+            />
             <Text style={[styles.tabText, activeTab === 'stats' && styles.tabTextActive]}>
               Stats
             </Text>
@@ -231,7 +241,11 @@ export default function ProfileScreen() {
             style={[styles.tab, activeTab === 'settings' && styles.tabActive]}
             onPress={() => setActiveTab('settings')}
           >
-            <Text style={styles.tabIcon}>⚙️</Text>
+            <Ionicons 
+              name={activeTab === 'settings' ? "settings" : "settings-outline"} 
+              size={20} 
+              color={activeTab === 'settings' ? '#FF6B00' : '#64748b'} 
+            />
             <Text style={[styles.tabText, activeTab === 'settings' && styles.tabTextActive]}>
               Config
             </Text>
@@ -245,12 +259,12 @@ export default function ProfileScreen() {
             <View style={styles.infoSection}>
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardIcon}>📋</Text>
+                  <Ionicons name="document-text" size={24} color="#FF6B00" />
                   <Text style={styles.cardTitle}>Datos Personales</Text>
                 </View>
 
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoIcon}>👤</Text>
+                  <Ionicons name="person" size={20} color="#FF6B00" />
                   <View style={styles.infoDetails}>
                     <Text style={styles.infoLabel}>Nombre</Text>
                     <Text style={styles.infoValue}>{user?.nombre}</Text>
@@ -258,7 +272,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoIcon}>👥</Text>
+                  <Ionicons name="people" size={20} color="#FF6B00" />
                   <View style={styles.infoDetails}>
                     <Text style={styles.infoLabel}>Apellido</Text>
                     <Text style={styles.infoValue}>
@@ -268,7 +282,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoIcon}>📧</Text>
+                  <Ionicons name="mail" size={20} color="#FF6B00" />
                   <View style={styles.infoDetails}>
                     <Text style={styles.infoLabel}>Correo</Text>
                     <Text style={styles.infoValue}>{user?.correo}</Text>
@@ -276,7 +290,7 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.infoItem}>
-                  <Text style={styles.infoIcon}>📱</Text>
+                  <Ionicons name="call" size={20} color="#FF6B00" />
                   <View style={styles.infoDetails}>
                     <Text style={styles.infoLabel}>Teléfono</Text>
                     <Text style={styles.infoValue}>
@@ -293,13 +307,13 @@ export default function ProfileScreen() {
             <View style={styles.physicalSection}>
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardIcon}>💪</Text>
+                  <Ionicons name="body" size={24} color="#FF6B00" />
                   <Text style={styles.cardTitle}>Información Física</Text>
                 </View>
 
                 <View style={styles.physicalStats}>
                   <View style={styles.physicalCard}>
-                    <Text style={styles.physicalIcon}>⚖️</Text>
+                    <Ionicons name="scale" size={32} color="#FF6B00" />
                     <Text style={styles.physicalLabel}>Peso</Text>
                     <Text style={styles.physicalValue}>
                       {user?.peso ? `${user.peso} kg` : 'N/A'}
@@ -307,7 +321,7 @@ export default function ProfileScreen() {
                   </View>
 
                   <View style={styles.physicalCard}>
-                    <Text style={styles.physicalIcon}>📏</Text>
+                    <Ionicons name="resize" size={32} color="#FF6B00" />
                     <Text style={styles.physicalLabel}>Altura</Text>
                     <Text style={styles.physicalValue}>
                       {user?.altura ? `${user.altura} m` : 'N/A'}
@@ -319,7 +333,7 @@ export default function ProfileScreen() {
               {/* IMC Card */}
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardIcon}>📊</Text>
+                  <Ionicons name="analytics" size={24} color="#FF6B00" />
                   <Text style={styles.cardTitle}>Índice de Masa Corporal</Text>
                 </View>
 
@@ -341,8 +355,8 @@ export default function ProfileScreen() {
                 <View style={styles.imcRanges}>
                   <View style={styles.rangeBar}>
                     <View style={[styles.rangeSegment, { backgroundColor: '#fbbf24' }]} />
-                    <View style={[styles.rangeSegment, { backgroundColor: '#34d399' }]} />
-                    <View style={[styles.rangeSegment, { backgroundColor: '#fb923c' }]} />
+                    <View style={[styles.rangeSegment, { backgroundColor: '#10b981' }]} />
+                    <View style={[styles.rangeSegment, { backgroundColor: '#f97316' }]} />
                     <View style={[styles.rangeSegment, { backgroundColor: '#ef4444' }]} />
                   </View>
                   <View style={styles.rangeLabels}>
@@ -361,35 +375,35 @@ export default function ProfileScreen() {
             <View style={styles.statsSection}>
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardIcon}>📈</Text>
+                  <Ionicons name="trending-up" size={24} color="#FF6B00" />
                   <Text style={styles.cardTitle}>Estadísticas de Entrenamiento</Text>
                 </View>
 
                 <View style={styles.statsGrid}>
-                  <View style={[styles.statCard, { backgroundColor: '#dbeafe' }]}>
-                    <Text style={styles.statCardIcon}>💪</Text>
+                  <View style={[styles.statCard, { backgroundColor: '#FFF5EB' }]}>
+                    <Ionicons name="barbell" size={32} color="#FF6B00" />
                     <Text style={styles.statCardLabel}>Rutinas Completadas</Text>
                     <Text style={styles.statCardValue}>
                       {estadisticas.rutinasCompletadas}
                     </Text>
                   </View>
 
-                  <View style={[styles.statCard, { backgroundColor: '#dcfce7' }]}>
-                    <Text style={styles.statCardIcon}>🏋️</Text>
+                  <View style={[styles.statCard, { backgroundColor: '#FFF5EB' }]}>
+                    <Ionicons name="fitness" size={32} color="#FF6B00" />
                     <Text style={styles.statCardLabel}>Ejercicios Realizados</Text>
                     <Text style={styles.statCardValue}>
                       {estadisticas.ejerciciosRealizados}
                     </Text>
                   </View>
 
-                  <View style={[styles.statCard, { backgroundColor: '#fef3c7' }]}>
-                    <Text style={styles.statCardIcon}>⏱️</Text>
+                  <View style={[styles.statCard, { backgroundColor: '#FFF5EB' }]}>
+                    <Ionicons name="time" size={32} color="#FF6B00" />
                     <Text style={styles.statCardLabel}>Tiempo Total</Text>
                     <Text style={styles.statCardValue}>{estadisticas.tiempoTotal}</Text>
                   </View>
 
-                  <View style={[styles.statCard, { backgroundColor: '#fee2e2' }]}>
-                    <Text style={styles.statCardIcon}>🔥</Text>
+                  <View style={[styles.statCard, { backgroundColor: '#FFF5EB' }]}>
+                    <Ionicons name="flame" size={32} color="#FF6B00" />
                     <Text style={styles.statCardLabel}>Racha Actual</Text>
                     <Text style={styles.statCardValue}>
                       {estadisticas.rachaActual} días
@@ -405,27 +419,27 @@ export default function ProfileScreen() {
             <View style={styles.settingsSection}>
               <View style={styles.card}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardIcon}>🔒</Text>
+                  <Ionicons name="lock-closed" size={24} color="#FF6B00" />
                   <Text style={styles.cardTitle}>Seguridad</Text>
                 </View>
 
                 <TouchableOpacity style={styles.settingItem}>
-                  <Text style={styles.settingIcon}>🔑</Text>
+                  <Ionicons name="key" size={20} color="#FF6B00" />
                   <Text style={styles.settingText}>Cambiar Contraseña</Text>
-                  <Text style={styles.settingArrow}>›</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.settingItem}>
-                  <Text style={styles.settingIcon}>🛡️</Text>
+                  <Ionicons name="shield-checkmark" size={20} color="#FF6B00" />
                   <Text style={styles.settingText}>Autenticación de dos factores</Text>
-                  <Text style={styles.settingArrow}>›</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </TouchableOpacity>
               </View>
 
               <View style={[styles.card, styles.dangerCard]}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.cardIcon}>⚠️</Text>
-                  <Text style={styles.cardTitle}>Zona de Peligro</Text>
+                  <Ionicons name="warning" size={24} color="#EF4444" />
+                  <Text style={[styles.cardTitle, { color: '#EF4444' }]}>Zona de Peligro</Text>
                 </View>
 
                 <Text style={styles.dangerText}>
@@ -433,7 +447,7 @@ export default function ProfileScreen() {
                 </Text>
 
                 <TouchableOpacity style={styles.dangerButton} onPress={handleDelete}>
-                  <Text style={styles.dangerIcon}>🗑️</Text>
+                  <Ionicons name="trash" size={18} color="white" />
                   <Text style={styles.dangerButtonText}>
                     Eliminar Cuenta Permanentemente
                   </Text>
@@ -456,13 +470,15 @@ export default function ProfileScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Editar Perfil</Text>
               <TouchableOpacity onPress={() => setEditMode(false)} disabled={loading}>
-                <Text style={styles.closeButton}>✕</Text>
+                <Ionicons name="close" size={28} color="#64748b" />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalBody}>
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>👤 Nombre</Text>
+                <Text style={styles.formLabel}>
+                  <Ionicons name="person" size={14} color="#FF6B00" /> Nombre
+                </Text>
                 <TextInput
                   style={styles.formInput}
                   value={formData.nombre}
@@ -473,7 +489,9 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>👥 Apellido</Text>
+                <Text style={styles.formLabel}>
+                  <Ionicons name="people" size={14} color="#FF6B00" /> Apellido
+                </Text>
                 <TextInput
                   style={styles.formInput}
                   value={formData.apellido}
@@ -484,7 +502,9 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>📱 Teléfono</Text>
+                <Text style={styles.formLabel}>
+                  <Ionicons name="call" size={14} color="#FF6B00" /> Teléfono
+                </Text>
                 <TextInput
                   style={styles.formInput}
                   value={formData.telefono}
@@ -497,7 +517,9 @@ export default function ProfileScreen() {
 
               <View style={styles.formRow}>
                 <View style={[styles.formGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={styles.formLabel}>⚖️ Peso (kg)</Text>
+                  <Text style={styles.formLabel}>
+                    <Ionicons name="scale" size={14} color="#FF6B00" /> Peso (kg)
+                  </Text>
                   <TextInput
                     style={styles.formInput}
                     value={formData.peso}
@@ -509,7 +531,9 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={[styles.formGroup, { flex: 1, marginLeft: 8 }]}>
-                  <Text style={styles.formLabel}>📏 Altura (m)</Text>
+                  <Text style={styles.formLabel}>
+                    <Ionicons name="resize" size={14} color="#FF6B00" /> Altura (m)
+                  </Text>
                   <TextInput
                     style={styles.formInput}
                     value={formData.altura}
@@ -538,7 +562,10 @@ export default function ProfileScreen() {
                   {loading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={styles.saveButtonText}>Guardar Cambios</Text>
+                    <>
+                      <Ionicons name="checkmark" size={18} color="white" />
+                      <Text style={styles.saveButtonText}>Guardar</Text>
+                    </>
                   )}
                 </TouchableOpacity>
               </View>
@@ -550,7 +577,6 @@ export default function ProfileScreen() {
   );
 }
 
-// ... (los mismos styles que tenías)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -566,15 +592,11 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  backIcon: {
-    fontSize: 24,
-    color: '#007AFF',
-    marginRight: 8,
+    gap: 8,
   },
   backText: {
     fontSize: 16,
-    color: '#007AFF',
+    color: '#FF6B00',
     fontWeight: '600',
   },
   profileHeader: {
@@ -591,7 +613,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF6B00',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -614,11 +636,6 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'white',
   },
-  verifiedIcon: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
   profileInfo: {
     alignItems: 'center',
     marginBottom: 16,
@@ -637,31 +654,25 @@ const styles = StyleSheet.create({
   roleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#eff6ff',
+    backgroundColor: '#FFF5EB',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-  },
-  roleIcon: {
-    fontSize: 14,
-    marginRight: 4,
+    gap: 4,
   },
   roleText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#007AFF',
+    color: '#FF6B00',
   },
   editButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF6B00',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
-  },
-  editIcon: {
-    fontSize: 16,
-    marginRight: 6,
+    gap: 6,
   },
   editText: {
     color: 'white',
@@ -680,13 +691,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 3,
     borderBottomColor: 'transparent',
+    gap: 4,
   },
   tabActive: {
-    borderBottomColor: '#007AFF',
-  },
-  tabIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+    borderBottomColor: '#FF6B00',
   },
   tabText: {
     fontSize: 12,
@@ -694,10 +702,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   tabTextActive: {
-    color: '#007AFF',
+    color: '#FF6B00',
   },
   tabContent: {
     padding: 15,
+    paddingBottom: 100,
   },
   card: {
     backgroundColor: 'white',
@@ -714,10 +723,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  cardIcon: {
-    fontSize: 24,
-    marginRight: 8,
+    gap: 8,
   },
   cardTitle: {
     fontSize: 18,
@@ -731,11 +737,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
-  },
-  infoIcon: {
-    fontSize: 24,
-    marginRight: 12,
-    width: 32,
+    gap: 12,
   },
   infoDetails: {
     flex: 1,
@@ -758,24 +760,23 @@ const styles = StyleSheet.create({
   },
   physicalCard: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#FFF5EB',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-  },
-  physicalIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FFD1A8',
   },
   physicalLabel: {
     fontSize: 13,
     color: '#64748b',
+    marginTop: 8,
     marginBottom: 4,
   },
   physicalValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#FF6B00',
   },
   imcDisplay: {
     flexDirection: 'row',
@@ -786,15 +787,17 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#eff6ff',
+    backgroundColor: '#FFF5EB',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    borderWidth: 3,
+    borderColor: '#FF6B00',
   },
   imcNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#FF6B00',
   },
   imcLabel: {
     fontSize: 12,
@@ -846,21 +849,20 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-  },
-  statCardIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FFD1A8',
   },
   statCardLabel: {
     fontSize: 12,
     color: '#64748b',
     textAlign: 'center',
+    marginTop: 8,
     marginBottom: 4,
   },
   statCardValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#FF6B00',
   },
   settingsSection: {},
   settingItem: {
@@ -869,21 +871,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
-  },
-  settingIcon: {
-    fontSize: 24,
-    marginRight: 12,
-    width: 32,
+    gap: 12,
   },
   settingText: {
     flex: 1,
     fontSize: 15,
     color: '#1e293b',
     fontWeight: '500',
-  },
-  settingArrow: {
-    fontSize: 24,
-    color: '#94a3b8',
   },
   dangerCard: {
     borderColor: '#fee2e2',
@@ -902,10 +896,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EF4444',
     padding: 14,
     borderRadius: 8,
-  },
-  dangerIcon: {
-    fontSize: 18,
-    marginRight: 8,
+    gap: 8,
   },
   dangerButtonText: {
     color: 'white',
@@ -936,10 +927,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1e293b',
   },
-  closeButton: {
-    fontSize: 28,
-    color: '#64748b',
-  },
   modalBody: {
     padding: 20,
   },
@@ -968,6 +955,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginTop: 24,
+    marginBottom: 20,
   },
   cancelButton: {
     flex: 1,
@@ -985,8 +973,11 @@ const styles = StyleSheet.create({
     flex: 2,
     padding: 14,
     borderRadius: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FF6B00',
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
   saveButtonText: {
     fontSize: 16,

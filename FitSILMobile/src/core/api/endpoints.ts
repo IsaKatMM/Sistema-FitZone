@@ -1,5 +1,5 @@
 // src/core/api/endpoints.ts
-export const API_BASE_URL = 'http://10.20.141.223:8081';
+export const API_BASE_URL = 'http://192.168.1.3:8081';
 
 export const ENDPOINTS = {
   // Auth
