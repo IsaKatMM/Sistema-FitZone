@@ -1,0 +1,732 @@
+# Manual de Usuario
+
+## Introducción
+
+Este manual describe cómo utilizar la aplicación móvil del Sistema Fitness. La aplicación permite gestionar rutinas de ejercicio, consultar recetas saludables, visualizar estadísticas de progreso y recibir notificaciones personalizadas.
+
+## Requisitos del Usuario
+
+### Dispositivo Móvil
+- **Android**: Versión 8.0 o superior
+- **iOS**: Versión 13.0 o superior
+- Conexión a Internet (WiFi o datos móviles)
+- Espacio disponible: mínimo 100 MB
+
+### Cuenta de Usuario
+- Dirección de correo electrónico válida
+- Contraseña de al menos 6 caracteres
+
+## Primeros Pasos
+
+### Instalación de la Aplicación
+
+#### Opción 1: Desde Expo Go (Desarrollo)
+1. Descargar **Expo Go** desde Play Store o App Store
+2. Escanear el código QR proporcionado por el equipo de desarrollo
+3. La aplicación se cargará automáticamente
+
+#### Opción 2: APK/IPA (Producción)
+1. Descargar el archivo de instalación proporcionado
+2. Android: Permitir instalación de fuentes desconocidas
+3. iOS: Instalar mediante TestFlight o certificado enterprise
+4. Abrir la aplicación instalada
+
+### Registro de Nueva Cuenta
+
+Si es la primera vez que usas la aplicación, debes crear una cuenta:
+
+**Paso 1: Acceder a Registro**
+- Al abrir la app, verás la pantalla de Login
+- Presiona el enlace "¿No tienes cuenta? Regístrate"
+
+**Paso 2: Completar Formulario de Registro**
+
+Ingresa los siguientes datos:
+
+- **Nombre**: Tu nombre completo
+- **Apellido**: Tu apellido (opcional)
+- **Correo Electrónico**: Email válido (será tu usuario)
+- **Usuario**: Nombre de usuario único
+- **Contraseña**: Mínimo 6 caracteres
+- **Confirmar Contraseña**: Debe coincidir con la anterior
+- **Teléfono**: Número de contacto (opcional)
+- **Peso**: Tu peso en kg (opcional)
+- **Altura**: Tu altura en cm (opcional)
+
+**Paso 3: Crear Cuenta**
+- Presiona el botón "Registrarse"
+- Si todos los datos son correctos, se creará tu cuenta
+- Serás redirigido automáticamente al login
+
+**Validaciones**:
+- ✅ El nombre debe tener al menos 3 caracteres
+- ✅ El email debe tener formato válido (ejemplo@dominio.com)
+- ✅ El usuario debe ser único en el sistema
+- ✅ La contraseña debe tener mínimo 6 caracteres
+- ✅ Las contraseñas deben coincidir
+
+### Inicio de Sesión
+
+**Paso 1: Ingresar Credenciales**
+- **Correo Electrónico**: El email que registraste
+- **Contraseña**: Tu contraseña
+
+**Paso 2: Iniciar Sesión**
+- Presiona el botón "Iniciar Sesión"
+- Si las credenciales son correctas, accederás a la aplicación
+- Tu sesión quedará guardada y no necesitarás volver a iniciar sesión
+
+**¿Olvidaste tu contraseña?**
+- Presiona "¿Olvidaste tu contraseña?"
+- Ingresa tu correo electrónico
+- Recibirás instrucciones para recuperarla
+
+## Navegación Principal
+
+### Estructura de la Aplicación
+
+Al iniciar sesión, accedes a la pantalla principal (Home) desde donde puedes navegar a:
+
+1. **Home (Inicio)**: Dashboard con resumen y estadísticas
+2. **Rutinas**: Gestión de rutinas de ejercicio
+3. **Ejercicios**: Catálogo de ejercicios disponibles
+4. **Recetas**: Búsqueda de recetas saludables
+5. **Reportes**: Generación y descarga de reportes
+6. **Notificaciones**: Alertas y mensajes del sistema
+7. **Perfil**: Configuración de cuenta personal
+
+### Barra de Navegación
+
+La aplicación utiliza navegación por pestañas (tabs) en la parte inferior:
+
+- 🏠 **Home**: Pantalla principal
+- 💪 **Rutinas**: Gestión de rutinas
+- 📊 **Estadísticas**: Métricas y progreso
+- 👤 **Perfil**: Configuración personal
+
+### Menú Lateral (Drawer)
+
+Desliza desde el borde izquierdo o presiona el ícono ☰ para acceder a:
+
+- Ejercicios
+- Recetas
+- Reportes
+- Notificaciones
+- Cerrar Sesión
+
+## Funcionalidades Principales
+
+### 1. Dashboard (Home)
+
+El dashboard muestra un resumen de tu actividad:
+
+**Resumen General**:
+- **Entrenamientos**: Total de rutinas completadas
+- **Duración Promedio**: Minutos promedio por entrenamiento
+- **Calorías**: Total de calorías quemadas
+
+**Gráfico Semanal**:
+- Minutos de ejercicio por día de la semana
+- Visualización en gráfico de barras
+- Datos de los últimos 7 días
+
+**Datos por Categoría**:
+- Distribución de ejercicios por músculo trabajado
+- Gráfico circular con porcentajes
+- Categorías: Pecho, Espalda, Piernas, Brazos, etc.
+
+**Métricas Adicionales**:
+- **Minutos del Mes**: Total de minutos ejercitados en el mes actual
+- **Racha Actual**: Días consecutivos con entrenamientos
+
+**Filtros**:
+- Última semana (1S)
+- Último mes (1M)
+- Últimos 3 meses (3M)
+- Último año (1A)
+
+### 2. Gestión de Rutinas
+
+#### Ver Rutinas
+
+**Acceso**: Tab "Rutinas" o menú principal
+
+**Organización por Días**:
+- Las rutinas están agrupadas por día de la semana
+- Selecciona un día para ver los ejercicios asignados
+- Cada rutina muestra:
+  - Nombre del ejercicio
+  - Imagen del ejercicio
+  - Series y repeticiones
+  - Peso utilizado
+  - Notas adicionales
+  - Estado: Completado ✅ o Pendiente ⏳
+
+**Acciones Disponibles**:
+- 👁️ **Ver detalles**: Presiona una rutina para ver más información
+- ✏️ **Editar**: Modificar series, repeticiones, peso o notas
+- ✅ **Completar**: Marcar como realizada
+- 🗑️ **Eliminar**: Borrar de la rutina
+
+#### Agregar Nueva Rutina
+
+**Paso 1: Acceder a Agregar**
+- En la pantalla de Rutinas, presiona el botón "+" o "Agregar Rutina"
+
+**Paso 2: Seleccionar Ejercicio**
+- Busca el ejercicio en el catálogo
+- Usa el buscador para filtrar por nombre
+- Presiona el ejercicio deseado
+
+**Paso 3: Configurar Rutina**
+
+Completa los siguientes campos:
+
+- **Día de la Semana**: Selecciona el día (Lunes, Martes, etc.)
+- **Series**: Número de series (ej: 4)
+- **Repeticiones**: Número de repeticiones por serie (ej: 12)
+- **Peso**: Peso utilizado en kg (ej: 20)
+- **Notas**: Observaciones opcionales (ej: "Aumentar peso la próxima semana")
+
+**Paso 4: Guardar**
+- Presiona "Agregar a Rutina"
+- La rutina se creará y aparecerá en el día seleccionado
+
+**Validaciones**:
+- ✅ Debes seleccionar un ejercicio
+- ✅ Series y repeticiones deben ser mayor a 0
+- ✅ El peso puede ser 0 (ejercicios sin peso)
+
+#### Editar Rutina Existente
+
+**Paso 1: Seleccionar Rutina**
+- Ve al día correspondiente
+- Presiona el ícono de editar ✏️ en la rutina
+
+**Paso 2: Modificar Datos**
+- Cambia series, repeticiones, peso o notas
+- No puedes cambiar el ejercicio ni el día
+
+**Paso 3: Guardar Cambios**
+- Presiona "Actualizar"
+- Los cambios se guardarán inmediatamente
+
+#### Completar Rutina
+
+**Opción 1: Individual**
+- Presiona el botón "Completar" ✅ en la rutina
+- Se marcará como completada con un check verde
+- Se registrará la fecha y hora de completado
+
+**Opción 2: Completar Día Completo**
+- Presiona "Completar Todas" en el encabezado del día
+- Todas las rutinas del día se marcarán como completadas
+- Se calcula el total de minutos ejercitados
+
+**Desmarcar Completada**:
+- Presiona nuevamente el botón de completar
+- La rutina volverá a estado pendiente
+
+#### Eliminar Rutina
+
+**Paso 1: Seleccionar**
+- Presiona el ícono de eliminar 🗑️ en la rutina
+
+**Paso 2: Confirmar**
+- Aparecerá un diálogo de confirmación
+- "¿Estás seguro de eliminar esta rutina?"
+
+**Paso 3: Eliminar**
+- Presiona "Sí, eliminar"
+- La rutina se borrará permanentemente
+- Presiona "Cancelar" para abortar
+
+⚠️ **Advertencia**: Esta acción no se puede deshacer.
+
+### 3. Catálogo de Ejercicios
+
+#### Explorar Ejercicios
+
+**Acceso**: Menú lateral → Ejercicios
+
+**Vista del Catálogo**:
+- Lista completa de ejercicios disponibles
+- Cada ejercicio muestra:
+  - Imagen ilustrativa
+  - Nombre del ejercicio
+  - Músculo trabajado principal
+  - Breve descripción
+
+**Búsqueda de Ejercicios**:
+- Usa la barra de búsqueda en la parte superior
+- Escribe el nombre del ejercicio o músculo
+- Los resultados se filtran en tiempo real
+
+**Filtros Disponibles**:
+- Por músculo trabajado (Pecho, Espalda, Piernas, etc.)
+- Por categoría (Fuerza, Cardio, Flexibilidad)
+- Por dificultad (Principiante, Intermedio, Avanzado)
+
+#### Ver Detalles de Ejercicio
+
+**Paso 1: Seleccionar Ejercicio**
+- Presiona sobre el ejercicio en la lista
+
+**Paso 2: Información Detallada**
+
+Verás:
+- **Imagen/Video**: Demostración visual del ejercicio
+- **Descripción**: Explicación completa del movimiento
+- **Músculo Principal**: Músculo objetivo del ejercicio
+- **Músculos Secundarios**: Otros músculos involucrados
+- **Equipo Necesario**: Máquinas o implementos requeridos
+- **Instrucciones Paso a Paso**: Cómo realizar correctamente el ejercicio
+- **Consejos**: Tips para mejor ejecución
+- **Errores Comunes**: Qué evitar al hacer el ejercicio
+
+**Acciones**:
+- **Agregar a Rutina**: Botón para añadir directamente a tu rutina
+- **Compartir**: Enviar información a contactos
+- **Favoritos**: Guardar en lista de favoritos (si disponible)
+
+### 4. Recetas Saludables
+
+#### Explorar Recetas
+
+**Acceso**: Menú lateral → Recetas
+
+**Vista del Catálogo**:
+- Tarjetas con imagen de cada receta
+- Nombre de la receta
+- Categoría (Desayuno, Almuerzo, Cena, Snack)
+- Tiempo de preparación
+- Calorías aproximadas
+
+**Búsqueda de Recetas**:
+
+**Por Nombre**:
+- Escribe el nombre de la receta en el buscador
+- Ejemplo: "ensalada", "pollo", "batido"
+
+**Por Ingrediente**:
+- Busca recetas que contengan un ingrediente específico
+- Ejemplo: "aguacate", "quinoa", "salmón"
+
+**Filtros Avanzados**:
+- **Restricciones Alimentarias**: 
+  - Vegetariano
+  - Vegano
+  - Sin gluten
+  - Sin lactosa
+  - Bajo en carbohidratos
+  - Alto en proteína
+- **Tiempo de Preparación**: 
+  - Rápida (< 15 min)
+  - Media (15-30 min)
+  - Larga (> 30 min)
+- **Dificultad**:
+  - Fácil
+  - Intermedia
+  - Difícil
+
+#### Ver Detalle de Receta
+
+**Paso 1: Seleccionar Receta**
+- Presiona sobre la receta deseada
+
+**Paso 2: Información Nutricional**
+
+Verás:
+- **Imagen**: Foto del platillo terminado
+- **Descripción**: Breve introducción
+- **Información Nutricional**:
+  - Calorías totales
+  - Proteínas (g)
+  - Carbohidratos (g)
+  - Grasas (g)
+- **Porciones**: Número de porciones que rinde
+- **Tiempo de Preparación**: Minutos requeridos
+- **Dificultad**: Nivel de complejidad
+
+**Paso 3: Ingredientes**
+- Lista completa de ingredientes
+- Cantidades exactas
+- Posibilidad de ajustar porciones (x1, x2, x3)
+
+**Paso 4: Instrucciones**
+- Pasos numerados
+- Instrucciones claras y concisas
+- Imágenes de pasos clave (si disponible)
+
+**Acciones**:
+- **Guardar en Favoritos**: Marcar como receta favorita
+- **Compartir**: Enviar receta a contactos
+- **Agregar a Plan de Comidas**: Añadir a calendario (si disponible)
+
+#### Recetas Aleatorias
+
+**Función "Sorpréndeme"**:
+- Presiona el botón "Recetas Aleatorias"
+- Se mostrarán 3 recetas al azar
+- Ideal para descubrir nuevas opciones
+- Actualiza presionando nuevamente
+
+### 5. Estadísticas y Progreso
+
+#### Dashboard de Estadísticas
+
+**Acceso**: Tab "Estadísticas"
+
+**Métricas Principales**:
+
+1. **Resumen General**:
+   - Total de entrenamientos completados
+   - Promedio de duración por entrenamiento
+   - Total de calorías quemadas
+   - Racha actual de días consecutivos
+
+2. **Gráfico Semanal**:
+   - Minutos de ejercicio por día
+   - Visualización de tendencias
+   - Comparación día a día
+   - Objetivo diario marcado (si configurado)
+
+3. **Distribución por Categoría**:
+   - Porcentaje de ejercicios por grupo muscular
+   - Gráfico circular interactivo
+   - Identifica áreas desatendidas
+
+4. **Progreso Mensual**:
+   - Total de minutos del mes
+   - Comparación con mes anterior
+   - Tendencia ascendente/descendente
+
+**Filtros de Tiempo**:
+- **1S**: Última semana
+- **1M**: Último mes (por defecto)
+- **3M**: Últimos 3 meses
+- **1A**: Último año
+
+Selecciona un filtro para actualizar todas las métricas según el rango.
+
+#### Análisis Detallado
+
+**Estadísticas por Ejercicio**:
+- Ejercicios más realizados
+- Frecuencia de cada ejercicio
+- Progreso de peso/repeticiones en el tiempo
+
+**Estadísticas por Día**:
+- Día de la semana con más actividad
+- Mejores rachas de entrenamiento
+- Días sin actividad
+
+**Tendencias**:
+- Gráfico de evolución temporal
+- Identifica patrones de entrenamiento
+- Sugerencias de mejora
+
+### 6. Reportes
+
+#### Tipos de Reportes Disponibles
+
+**Acceso**: Menú lateral → Reportes
+
+**1. Reporte Mensual**:
+- Resumen completo del mes
+- Entrenamientos realizados
+- Calorías quemadas
+- Progreso general
+- **Formato**: PDF, Excel, JSON
+
+**2. Reporte Semanal**:
+- Actividad de los últimos 7 días
+- Comparación día por día
+- Objetivos alcanzados
+- **Formato**: PDF, Excel, JSON
+
+**3. Reporte de Calorías**:
+- Análisis detallado de calorías quemadas
+- Gráficos de evolución
+- Promedio diario
+- **Rango**: Última semana, mes, 3 meses, año
+
+**4. Historial Completo**:
+- Registro total desde el inicio
+- Todas las rutinas completadas
+- Progreso acumulado
+- **Formato**: PDF, Excel, JSON
+
+**5. Reportes Públicos del Administrador**:
+- Reportes generados por administradores
+- Análisis de tendencias generales
+- Comparativas poblacionales
+- Disponibles para descarga
+
+#### Generar Reporte
+
+**Paso 1: Seleccionar Tipo**
+- Elige el tipo de reporte que deseas
+
+**Paso 2: Configurar Opciones**
+- **Rango de Fechas**: Selecciona el período
+- **Formato**: PDF, Excel o JSON
+- **Filtros Adicionales**: Por ejercicio, categoría, etc.
+
+**Paso 3: Generar**
+- Presiona "Generar Reporte"
+- El sistema procesará la información
+- Aparecerá un indicador de progreso
+
+**Paso 4: Descargar/Visualizar**
+- **Ver**: Visualiza el reporte en pantalla
+- **Descargar**: Guarda en tu dispositivo
+- **Compartir**: Envía por email o redes sociales
+
+#### Gestión de Reportes Guardados
+
+**Historial de Reportes**:
+- Lista de reportes generados anteriormente
+- Fecha de generación
+- Tipo y formato
+- Tamaño del archivo
+
+**Acciones**:
+- **Descargar Nuevamente**: Re-descargar reportes previos
+- **Eliminar**: Borrar reportes antiguos
+- **Compartir**: Enviar a contactos
+
+### 7. Notificaciones
+
+#### Centro de Notificaciones
+
+**Acceso**: Menú lateral → Notificaciones o ícono 🔔
+
+**Tipos de Notificaciones**:
+
+1. **Nuevo Reporte Disponible**:
+   - Alerta cuando un administrador publica un reporte
+   - Acceso directo al reporte
+
+2. **Actualización del Sistema**:
+   - Nuevas funcionalidades disponibles
+   - Cambios importantes en la app
+
+3. **Recordatorio de Entrenamiento**:
+   - Recordatorios de rutinas pendientes
+   - Motivación para mantener racha
+
+4. **Racha Activa**:
+   - Celebración de días consecutivos
+   - Logros desbloqueados
+
+**Estados**:
+- **No leída**: Fondo resaltado, texto en negrita
+- **Leída**: Fondo normal, texto regular
+
+**Contador de No Leídas**:
+- Badge con número en el ícono de notificaciones
+- Actualización en tiempo real
+
+#### Gestionar Notificaciones
+
+**Marcar como Leída**:
+- Presiona la notificación para abrirla
+- Automáticamente se marca como leída
+- El contador se actualiza
+
+**Eliminar Notificación**:
+- Desliza la notificación hacia la izquierda
+- Presiona el ícono de eliminar 🗑️
+- Confirma la eliminación
+
+**Eliminar Todas**:
+- Presiona "Eliminar Todas las Leídas"
+- Limpia notificaciones leídas antiguas
+
+**Configuración de Notificaciones**:
+- Activa/desactiva tipos de notificaciones
+- Configura horarios de notificaciones
+- Elige frecuencia de recordatorios
+
+### 8. Perfil de Usuario
+
+#### Ver y Editar Perfil
+
+**Acceso**: Tab "Perfil" o menú → Perfil
+
+**Información Personal**:
+- **Foto de Perfil**: Cambiar imagen (si disponible)
+- **Nombre**: Editar nombre completo
+- **Apellido**: Editar apellido
+- **Usuario**: Ver nombre de usuario (no editable)
+- **Correo Electrónico**: Ver email (no editable)
+- **Teléfono**: Actualizar número
+- **Peso**: Actualizar peso actual (kg)
+- **Altura**: Actualizar altura (cm)
+
+**Editar Información**:
+
+**Paso 1**: Presiona el botón "Editar Perfil"
+
+**Paso 2**: Modifica los campos deseados
+
+**Paso 3**: Presiona "Guardar Cambios"
+
+**Validaciones**:
+- Peso y altura deben ser valores positivos
+- Teléfono debe tener formato válido
+
+#### Cambiar Contraseña
+
+**Paso 1: Acceder**
+- En Perfil, presiona "Cambiar Contraseña"
+
+**Paso 2: Ingresar Datos**
+- **Contraseña Actual**: Tu contraseña actual
+- **Nueva Contraseña**: La nueva contraseña (min 6 caracteres)
+- **Confirmar Nueva Contraseña**: Repite la nueva contraseña
+
+**Paso 3: Guardar**
+- Presiona "Actualizar Contraseña"
+- Si la contraseña actual es correcta, se actualizará
+- Recibirás confirmación
+
+**Seguridad**:
+- ✅ La contraseña actual debe ser correcta
+- ✅ La nueva contraseña debe tener mínimo 6 caracteres
+- ✅ Las contraseñas nuevas deben coincidir
+- ✅ Por seguridad, cierra sesión después del cambio
+
+#### Preferencias y Configuración
+
+**Unidades de Medida**:
+- Métrico (kg, cm) / Imperial (lb, in)
+
+**Idioma**:
+- Español / Inglés (si disponible)
+
+**Tema**:
+- Claro / Oscuro / Automático
+
+**Privacidad**:
+- Perfil público/privado
+- Compartir estadísticas con otros usuarios
+
+#### Cerrar Sesión
+
+**Paso 1**: Menú lateral → "Cerrar Sesión"
+
+**Paso 2**: Confirma que deseas salir
+
+**Paso 3**: Serás redirigido a la pantalla de Login
+
+⚠️ **Nota**: Puedes iniciar sesión nuevamente cuando quieras. Tus datos se mantienen guardados en el servidor.
+
+## Consejos y Buenas Prácticas
+
+### Para Mejores Resultados
+
+**Rutinas**:
+- ✅ Planifica tu semana completa de entrenamientos
+- ✅ Varía los grupos musculares para evitar sobreentrenamiento
+- ✅ Actualiza pesos progresivamente
+- ✅ Usa las notas para registrar sensaciones y ajustes
+
+**Seguimiento**:
+- ✅ Completa tus rutinas diariamente para racha
+- ✅ Revisa tus estadísticas semanalmente
+- ✅ Ajusta tu plan según el progreso
+- ✅ Genera reportes mensuales para análisis
+
+**Nutrición**:
+- ✅ Explora recetas balanceadas
+- ✅ Considera restricciones alimentarias
+- ✅ Planifica comidas con anticipación
+- ✅ Combina ejercicio con buena alimentación
+
+### Solución de Problemas Comunes
+
+**No puedo iniciar sesión**:
+- Verifica que el correo sea el correcto
+- Verifica que la contraseña sea correcta
+- Usa "Olvidé mi contraseña" si es necesario
+- Verifica tu conexión a Internet
+
+**No aparecen mis rutinas**:
+- Verifica que estés en el día correcto
+- Actualiza deslizando hacia abajo (pull to refresh)
+- Verifica tu conexión a Internet
+- Cierra y vuelve a abrir la app
+
+**Las estadísticas no se actualizan**:
+- Asegúrate de marcar rutinas como completadas
+- Verifica el rango de fechas seleccionado
+- Actualiza la pantalla (pull to refresh)
+- Reinicia la aplicación
+
+**Error al agregar rutina**:
+- Verifica que todos los campos estén completos
+- Series y repeticiones deben ser mayores a 0
+- Verifica tu conexión a Internet
+- Intenta de nuevo en unos momentos
+
+**La app se cierra inesperadamente**:
+- Actualiza la app a la última versión
+- Limpia el caché de la app
+- Reinicia tu dispositivo
+- Reporta el error al soporte
+
+## Soporte y Ayuda
+
+### Contacto
+
+Si tienes problemas o dudas:
+
+📧 **Email**: soporte@fitsil.com  
+💬 **Chat en Vivo**: Disponible en la app (ícono de ayuda)  
+📱 **WhatsApp**: +593 XX XXX XXXX  
+🌐 **Sitio Web**: www.fitsil.com/ayuda  
+
+### Horarios de Atención
+
+- Lunes a Viernes: 8:00 AM - 6:00 PM
+- Sábados: 9:00 AM - 1:00 PM
+- Domingos: Cerrado
+
+### Reportar un Error
+
+**En la App**:
+1. Menú → Ayuda → Reportar Problema
+2. Describe el error con detalle
+3. Adjunta capturas de pantalla si es posible
+4. Envía el reporte
+
+Recibirás respuesta en máximo 24 horas hábiles.
+
+## Glosario
+
+**Rutina**: Conjunto de ejercicios asignados a un día específico  
+**Serie**: Grupo de repeticiones de un ejercicio  
+**Repetición**: Una ejecución completa de un ejercicio  
+**Músculo Trabajado**: Grupo muscular principal que se ejercita  
+**Racha**: Días consecutivos con al menos una rutina completada  
+**DTO**: Data Transfer Object, objeto de transferencia de datos  
+**JWT**: JSON Web Token, token de autenticación  
+**API REST**: Interfaz de programación de aplicaciones  
+
+## Actualizaciones
+
+**Versión Actual**: 1.0.0
+
+La aplicación se actualiza regularmente con:
+- Nuevas funcionalidades
+- Corrección de errores
+- Mejoras de rendimiento
+- Nuevos ejercicios y recetas
+
+Recibirás notificaciones cuando haya actualizaciones disponibles.
+
+---
+
+**¡Disfruta tu entrenamiento con FitSIL!** 💪🏋️‍♂️

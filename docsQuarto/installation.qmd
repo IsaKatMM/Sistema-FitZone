@@ -1,0 +1,267 @@
+# Guía de Instalación
+
+## Requisitos Previos
+
+### Software Requerido
+
+Para ejecutar y desarrollar la aplicación móvil, necesitas tener instalados los siguientes componentes:
+
+#### Node.js y npm
+- **Node.js** versión 18.x o superior
+- **npm** versión 9.x o superior (incluido con Node.js)
+
+Verificar instalación:
+```bash
+node --version
+npm --version
+```
+
+#### Expo CLI
+```bash
+npm install -g expo-cli
+```
+
+#### Editor de Código
+- **Visual Studio Code** (recomendado)
+- Extensiones recomendadas:
+  - ES7+ React/Redux/React-Native snippets
+  - TypeScript
+  - Prettier - Code formatter
+
+### Dispositivos para Pruebas
+
+Puedes ejecutar la aplicación en:
+
+#### Opción 1: Dispositivo Físico (Recomendado)
+- Smartphone Android o iOS
+- App **Expo Go** instalada:
+  - [Android - Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent)
+  - [iOS - App Store](https://apps.apple.com/app/expo-go/id982107779)
+
+#### Opción 2: Emulador
+- **Android Studio** con emulador Android configurado
+- **Xcode** con simulador iOS (solo macOS)
+
+## Instalación del Proyecto
+
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/tu-usuario/fitness-mobile-app.git
+cd fitness-mobile-app
+```
+
+### 2. Instalar Dependencias
+```bash
+npm install
+```
+
+Esto instalará todas las dependencias definidas en `package.json`, incluyendo:
+- React Native
+- Expo SDK
+- Axios
+- TypeScript
+- Expo Router
+- Y todas las demás librerías del proyecto
+
+### 3. Configurar Variables de Entorno
+
+Edita el archivo `src/core/api/endpoints.ts` y configura la URL de tu backend:
+```typescript
+export const API_BASE_URL = 'http://TU_IP:8081';
+```
+
+**Importante**: 
+- Para dispositivos físicos, usa la IP local de tu computadora (ej: `http://192.168.1.3:8081`)
+- No uses `localhost` ya que el dispositivo móvil no puede resolverlo
+- Asegúrate de que el backend esté corriendo y accesible desde la red
+
+### 4. Verificar Configuración
+
+Revisa que el archivo `app.json` tenga la configuración correcta:
+```json
+{
+  "expo": {
+    "name": "fitness-app",
+    "slug": "fitness-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"]
+  }
+}
+```
+
+## Ejecución de la Aplicación
+
+### Modo Desarrollo
+
+#### Iniciar el servidor de desarrollo:
+```bash
+npx expo start
+```
+
+Esto iniciará el servidor de desarrollo de Expo y mostrará un código QR en la terminal.
+
+#### Opciones de ejecución:
+
+1. **En dispositivo físico**:
+   - Abre la app **Expo Go** en tu smartphone
+   - Escanea el código QR que aparece en la terminal
+   - La app se cargará automáticamente
+
+2. **En emulador Android**:
+```bash
+   npx expo start --android
+```
+
+3. **En simulador iOS** (solo macOS):
+```bash
+   npx expo start --ios
+```
+
+4. **En navegador web** (funcionalidad limitada):
+```bash
+   npx expo start --web
+```
+
+### Scripts Disponibles
+
+El proyecto incluye los siguientes scripts en `package.json`:
+```bash
+# Iniciar en desarrollo
+npm start
+
+# Ejecutar en Android
+npm run android
+
+# Ejecutar en iOS
+npm run ios
+
+# Ejecutar en web
+npm run web
+
+# Verificar tipos TypeScript
+npm run type-check
+
+# Limpiar cache
+npm run clean
+```
+
+## Configuración del Backend
+
+### Requisitos del Backend
+
+La aplicación móvil requiere que el backend esté corriendo y accesible. Asegúrate de:
+
+1. **Backend en ejecución**:
+```bash
+   # En el directorio del backend
+   ./mvnw spring-boot:run
+```
+
+2. **Puerto correcto**: El backend debe estar en el puerto `8081`
+
+3. **CORS habilitado**: El backend debe permitir peticiones desde el cliente móvil
+
+4. **Base de datos**: PostgreSQL debe estar corriendo con los datos iniciales
+
+### Verificar Conectividad
+
+Prueba que la API sea accesible desde tu red local:
+```bash
+# Desde tu computadora
+curl http://localhost:8081/ejercicios/obtener
+
+# Desde otro dispositivo en la misma red
+curl http://192.168.1.3:8081/ejercicios/obtener
+```
+
+Si obtienes respuesta JSON, la configuración es correcta.
+
+## Solución de Problemas Comunes
+
+### Error: "Unable to resolve module"
+
+**Solución**:
+```bash
+# Limpiar cache de npm y Expo
+rm -rf node_modules
+npm cache clean --force
+npm install
+
+# Limpiar cache de Expo
+npx expo start -c
+```
+
+### Error: "Network request failed"
+
+**Causa**: La app no puede conectarse al backend.
+
+**Solución**:
+1. Verifica que el backend esté corriendo
+2. Asegúrate de usar la IP correcta (no `localhost`)
+3. Verifica que el firewall permita conexiones en el puerto 8081
+4. Confirma que el dispositivo móvil esté en la misma red WiFi
+
+### Error: "Expo Go app crashes"
+
+**Solución**:
+1. Actualiza Expo Go a la última versión
+2. Verifica compatibilidad de versiones en `package.json`:
+```bash
+   npx expo-doctor
+```
+3. Reinicia el servidor de desarrollo
+
+### La app no se actualiza automáticamente
+
+**Solución**:
+1. Activa "Fast Refresh" en la app Expo Go
+2. Reinicia el bundler:
+```bash
+   npx expo start --clear
+```
+
+### Problemas con TypeScript
+
+**Solución**:
+```bash
+# Verificar errores de tipos
+npm run type-check
+
+# Reinstalar tipos
+npm install --save-dev @types/react @types/react-native
+```
+
+## Compilación para Producción
+
+### Build para Android (APK)
+```bash
+# Instalar EAS CLI
+npm install -g eas-cli
+
+# Configurar proyecto
+eas build:configure
+
+# Crear build para Android
+eas build --platform android --profile preview
+```
+
+### Build para iOS (solo con cuenta de desarrollador Apple)
+```bash
+eas build --platform ios --profile preview
+```
+
+El proceso de build se realiza en servidores de Expo y puede tardar 10-20 minutos.
+
+## Verificación de Instalación Exitosa
+
+Una vez completados todos los pasos, deberías poder:
+
+✅ Iniciar la app con `npx expo start`  
+✅ Ver la pantalla de login en tu dispositivo  
+✅ Conectarte al backend correctamente  
+✅ Registrar un nuevo usuario  
+✅ Iniciar sesión con credenciales válidas  
+✅ Navegar entre las pantallas de la app  
+
+Si todos estos puntos funcionan, la instalación fue exitosa. 

@@ -1,0 +1,42 @@
+project:
+  type: book
+  output-dir: _output
+
+book:
+  title: "Sistema Fitness Multiplataforma"
+  subtitle: "Documentación Técnica - Aplicación Móvil"
+  author: "Grupo 4"
+  date: today
+  chapters:
+    - index.qmd
+    - installation.qmd
+    - architecture.qmd
+    - user-manual.qmd
+    - testing.qmd
+
+format:
+  pdf:
+    documentclass: report
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    colorlinks: true
+    geometry:
+      - top=25mm
+      - left=25mm
+      - right=25mm
+      - bottom=25mm
+    include-in-header:
+      text: |
+        \usepackage{fancyhdr}
+        \pagestyle{fancy}
+  
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    css: styles.css
+    code-fold: true
+    code-tools: true
+

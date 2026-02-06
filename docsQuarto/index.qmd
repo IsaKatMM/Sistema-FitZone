@@ -1,0 +1,71 @@
+# Introducción {.unnumbered}
+
+## Resumen Ejecutivo
+
+Este documento presenta la documentación técnica completa del **Sistema Fitness Multiplataforma**, específicamente la implementación de la aplicación móvil desarrollada con **React Native/Expo**. El sistema permite a los usuarios gestionar rutinas de ejercicio, consultar recetas saludables, visualizar estadísticas de progreso y recibir notificaciones personalizadas.
+
+## Contexto del Proyecto
+
+El sistema fitness es una solución multiplataforma que integra:
+
+- **Backend REST API**: Servidor desarrollado en Spring Boot
+- **Frontend Web**: Aplicación web responsive
+- **Aplicación Móvil**: App nativa/híbrida (este documento)
+
+La aplicación móvil se comunica con el backend mediante una API REST, permitiendo acceso desde dispositivos Android e iOS a todas las funcionalidades del sistema.
+
+## Objetivos
+
+### Objetivo General
+Desarrollar una aplicación móvil funcional que permita a los usuarios acceder a las funcionalidades del sistema fitness de manera intuitiva y eficiente desde dispositivos móviles.
+
+### Objetivos Específicos
+
+- Implementar autenticación segura mediante JWT tokens
+- Desarrollar interfaces para gestión de rutinas de ejercicio personalizadas
+- Integrar visualización de recetas y recomendaciones nutricionales
+- Implementar dashboard con estadísticas de progreso del usuario
+- Gestionar notificaciones y reportes personalizados
+- Aplicar arquitectura limpia (Clean Architecture) para mantenibilidad del código
+
+## Tecnologías Utilizadas
+
+### Frontend Móvil
+- **React Native** con **Expo**
+- **TypeScript** para tipado estático
+- **Expo Router** para navegación
+- **Axios** para peticiones HTTP
+- **Expo SecureStore** para almacenamiento seguro
+
+### Backend
+- **Spring Boot** (API REST)
+- **JWT** para autenticación
+- **PostgreSQL** como base de datos
+
+### Arquitectura
+- **Clean Architecture** (Domain, Data, Presentation)
+- **Repository Pattern**
+- **Use Cases** para lógica de negocio
+
+## Alcance del Documento
+
+Este documento cubre:
+
+1. **Instalación y configuración** del entorno de desarrollo
+2. **Arquitectura del sistema** con diagramas C4 (Container y Code)
+3. **Manual de usuario** con guías de uso de cada funcionalidad
+4. **Pruebas realizadas** y evidencias de funcionamiento
+5. **Video demostrativo** del sistema en operación
+
+## Estructura del Documento
+
+- **Capítulo 1**: Guía de instalación
+- **Capítulo 2**: Arquitectura del sistema
+- **Capítulo 3**: Manual de usuario
+- **Capítulo 4**: Pruebas y validación
+
+---
+
+**Fecha de elaboración**: 05/02/2026`
+
+**Versión**: 1.0
